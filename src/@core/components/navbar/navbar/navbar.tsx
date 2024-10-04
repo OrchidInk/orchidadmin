@@ -1,4 +1,5 @@
 'use client';
+
 import { Box, Flex, HStack, Input, Avatar, Text, Menu, MenuButton, MenuList, MenuItem, Button, Divider, Icon, IconButton } from '@chakra-ui/react';
 import { FaBell, FaCog, FaMoon, FaSun, FaExpand, FaLayerGroup, FaUserAlt, FaShieldAlt, FaHome, FaClipboard, FaChevronDown } from 'react-icons/fa';
 import { useColorMode } from '@chakra-ui/react';
@@ -24,8 +25,8 @@ const Header = () => {
       >
         {/* Left Side - Logo and Search */}
         <HStack spacing={4} w="full">
-          <Text fontSize="2xl" fontWeight="bold" color="teal.400">
-            Orchid
+          <Text fontSize="2xl" fontWeight="bold" color="white">
+            L<Text as="span" color="teal.400">U</Text>NO
           </Text>
           <Input
             placeholder="Enter your search key word"
@@ -37,13 +38,13 @@ const Header = () => {
             color="white"
             _placeholder={{ color: 'gray.400' }}
             flex={1}
-            maxW={'none'}
+            maxW={'100%'}
           />
         </HStack>
 
         {/* Right Side - Icons and Avatar */}
         <HStack spacing={4} ml={6}>
-          <Text>Мэдэгдэл</Text>
+          <Text>Notification</Text>
           <Icon as={FaExpand} cursor="pointer" _hover={{ color: 'teal.400' }} />
           <Icon as={FaLayerGroup} cursor="pointer" _hover={{ color: 'teal.400' }} />
           <Icon as={FaBell} cursor="pointer" _hover={{ color: 'teal.400' }} />
@@ -64,7 +65,7 @@ const Header = () => {
             <MenuButton>
               <Avatar name="C" bg="purple.500" cursor="pointer" />
             </MenuButton>
-            <MenuList>
+            <MenuList bg="gray.800" color="white">
               <MenuItem icon={<FaUserAlt />}>Profile</MenuItem>
               <MenuItem icon={<FaCog />}>Settings</MenuItem>
               <MenuItem icon={<FaBell />}>Notifications</MenuItem>
