@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import HomePage from "./home/page";
+import HomePage from "./dashboard/page";
 import useTokenExpiration from "@/@core/utils/auth/auth";
 
 

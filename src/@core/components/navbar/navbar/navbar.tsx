@@ -4,14 +4,19 @@ import { Box, Flex, HStack, Input, Avatar, Text, Menu, MenuButton, MenuList, Men
 import { FaBell, FaCog, FaMoon, FaSun, FaExpand, FaLayerGroup, FaUserAlt, FaShieldAlt, FaHome, FaClipboard, FaChevronDown } from 'react-icons/fa';
 import { useColorMode } from '@chakra-ui/react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const [searchValue, setSearchValue] = useState('');
+  const router = useRouter();
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
 
   return (
     <Box w="full">
-      {/* Top Section - Logo, Search, and Right-side Icons */}
       <Flex
         as="header"
         align="center"
@@ -23,10 +28,9 @@ const Header = () => {
         boxShadow="md"
         w="full"
       >
-        {/* Left Side - Logo and Search */}
         <HStack spacing={4} w="full">
           <Text fontSize="2xl" fontWeight="bold" color="white">
-            L<Text as="span" color="teal.400">U</Text>NO
+            OR<Text as="span" color="teal.400">CH</Text>ID
           </Text>
           <Input
             placeholder="Enter your search key word"
@@ -66,18 +70,16 @@ const Header = () => {
               <Avatar name="C" bg="purple.500" cursor="pointer" />
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem icon={<FaUserAlt />}>Profile</MenuItem>
-              <MenuItem icon={<FaCog />}>Settings</MenuItem>
-              <MenuItem icon={<FaBell />}>Notifications</MenuItem>
+              <MenuItem icon={<FaUserAlt />} onClick={() => handleNavigation('/profile')}>Profile</MenuItem>
+              <MenuItem icon={<FaCog />} onClick={() => handleNavigation('/settings')}>Settings</MenuItem>
+              <MenuItem icon={<FaBell />} onClick={() => handleNavigation('/notifications')}>Notifications</MenuItem>
             </MenuList>
           </Menu>
         </HStack>
       </Flex>
 
-      {/* Divider and Bottom Green Bar */}
       <Divider borderColor="teal.400" />
 
-      {/* Bottom Section - Menu Items with Dropdowns */}
       <Flex
         as="nav"
         align="center"
@@ -93,9 +95,9 @@ const Header = () => {
               My Dashboard
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem _hover={{ bg: 'gray.700' }}>Analysis</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>My Wallet</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>IoT</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/dashboard')}>Analysis</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/dashboard/wallet')}>My Wallet</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/dashboard/iot')}>IoT</MenuItem>
             </MenuList>
           </Menu>
 
@@ -104,9 +106,9 @@ const Header = () => {
               Unique Dashboard
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem _hover={{ bg: 'gray.700' }}>CRM Management</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>Cryptocurrency</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>eCommerce</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/dashboard/crm')}>CRM Management</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/dashboard/crypto')}>Cryptocurrency</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/dashboard/ecommerce')}>eCommerce</MenuItem>
             </MenuList>
           </Menu>
 
@@ -115,9 +117,9 @@ const Header = () => {
               Applications
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem _hover={{ bg: 'gray.700' }}>Calendar</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>Email App</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>File Manager</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/applications/calendar')}>Calendar</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/applications/email')}>Email App</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/applications/files')}>File Manager</MenuItem>
             </MenuList>
           </Menu>
 
@@ -126,9 +128,9 @@ const Header = () => {
               Crafted Pages
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem _hover={{ bg: 'gray.700' }}>Invoice</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>FAQ</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>Pricing</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/pages/invoice')}>Invoice</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/pages/faq')}>FAQ</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/pages/pricing')}>Pricing</MenuItem>
             </MenuList>
           </Menu>
 
@@ -137,8 +139,8 @@ const Header = () => {
               Account
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem _hover={{ bg: 'gray.700' }}>Profile</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>Settings</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/account/profile')}>Profile</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/account/settings')}>Settings</MenuItem>
             </MenuList>
           </Menu>
 
@@ -147,8 +149,8 @@ const Header = () => {
               Authentication
             </MenuButton>
             <MenuList bg="gray.800" color="white">
-              <MenuItem _hover={{ bg: 'gray.700' }}>Login</MenuItem>
-              <MenuItem _hover={{ bg: 'gray.700' }}>Register</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/auth/login')}>Login</MenuItem>
+              <MenuItem _hover={{ bg: 'gray.700' }} onClick={() => handleNavigation('/auth/register')}>Register</MenuItem>
             </MenuList>
           </Menu>
         </HStack>
