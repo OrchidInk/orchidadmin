@@ -1,13 +1,20 @@
 import { Box } from "@chakra-ui/react";
 import Navbar from "./navbar/navbar";
+import { ReactNode } from "react";
 
-const NavbarLayout = () => {
+interface NavbarLayoutProps {
+  children: ReactNode; 
+}
+
+const NavbarLayout = ({ children }: NavbarLayoutProps) => {
   return (
     <Box>
-      <Navbar/>
+      <Navbar />
+      <Box as="main">
+        {children}
+      </Box>
     </Box>
-  )
-
+  );
 };
 
 export default NavbarLayout;

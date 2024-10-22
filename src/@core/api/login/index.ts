@@ -15,10 +15,8 @@ export const login = async ({ username, password }: LoginParams) => {
     return response.data;
   } catch (error: any) {
     if (error.response) {
-      // The request was made and the server responded with a status code outside 2xx range
       throw new Error(error.response.data.message || 'Login failed');
     } else {
-      // Something else happened while making the request
       throw new Error(error.message || 'Login failed');
     }
   }
