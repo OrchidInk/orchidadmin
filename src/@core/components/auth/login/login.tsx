@@ -2,6 +2,7 @@
 
 import { Box, Button, FormControl, FormLabel, Input, Heading, Stack, useToast } from "@chakra-ui/react";
 import { useState } from "react";
+import { login } from "@/@core/api/login";
 
 interface LoginProps {
   onLoginSuccess: () => void;
@@ -11,10 +12,15 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const toast = useToast();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "admin" && password === "admin") {
+    setLoading(true);
+
+    try {
+      const response = await login({ username, password });
+      
       toast({
         title: "Login successful.",
         description: "You have successfully logged in.",
@@ -22,15 +28,18 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
         duration: 3000,
         isClosable: true,
       });
+
       onLoginSuccess();
-    } else {
+    } catch (error: any) {
       toast({
         title: "Login failed.",
-        description: "Invalid username or password.",
+        description: error.message || "Invalid username or password.",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,7 +61,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
         maxW="md"
       >
         <Heading as="h2" size="lg" textAlign="center" mb={6} color="black">
-         Orchid Admins
+          Orchid Admins
         </Heading>
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
@@ -86,6 +95,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
               size="lg"
               fontSize="md"
               mt={4}
+              isLoading={loading}
             >
               Login
             </Button>
