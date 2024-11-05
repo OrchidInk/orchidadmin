@@ -1,181 +1,169 @@
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { FaBell, FaCog, FaMoon, FaSun, FaExpand, FaLayerGroup, FaUserAlt, FaShieldAlt, FaHome, FaClipboard, FaChevronDown, FaCar, FaStore } from 'react-icons/fa';
-import { FaBagShopping } from 'react-icons/fa6';
+import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  IconButton,
+  Avatar,
+  Button,
+  Menu,
+  MenuItem,
+  MenuList,
+  Divider,
+} from '@mui/material';
+import {
+  FaBell,
+  FaCog,
+  FaMoon,
+  FaSun,
+  FaHome,
+  FaChevronDown,
+  FaStore,
+  FaCar,
+  FaUserAlt,
+  FaShieldAlt,
+  FaClipboard,
+} from 'react-icons/fa';
+import { FiberManualRecord } from '@mui/icons-material';
+import NavbarSearch from '../Search/navbarSearch'; // Assuming NavbarSearch is in this path
+import { useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/router';
 
 const Header = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const router = useRouter();
-  const currentPath = usePathname();
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const theme = useTheme();
+  const router = useRouter()
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'light' : 'dark');
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
 
   const handleNavigation = (path: string) => {
-    router.push(path);
+    router.push(path)
+    handleMenuClose();
   };
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-  const activeMenuItemStyle = 'text-teal-300 bg-gray-700';
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between px-6 py-3 bg-gray-900 text-white shadow-md w-full">
-        <div className="flex items-center space-x-4 w-full">
-          <span className="text-2xl font-bold text-white">
-            OR<span className="text-teal-400">CH</span>ID
-          </span>
-          <input
-            type="text"
-            placeholder="Хайх үгээ бичнэ үү"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="input input-bordered w-full max-w-md bg-gray-700 text-white placeholder-gray-400"
-          />
-        </div>
+    <AppBar position="static" sx={{ backgroundColor: '#1a1a1a', boxShadow: 'none' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', alignItems: 'center', height: 64 }}>
+        {/* Left: Logo and Search */}
+        <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#00ffba', mr: 3 }}>
+            OR<span style={{ color: theme.palette.primary.main }}>CH</span>ID
+          </Typography>
+          <NavbarSearch />
+        </Box>
 
-        {/* Right Side - Icons and Avatar */}
-        <div className="flex items-center space-x-4 ml-6">
-          <span>Мэдэгдэл</span>
-          <FaBell className="cursor-pointer hover:text-teal-400" />
-          <button
-            onClick={toggleDarkMode}
-            className="btn btn-ghost hover:bg-gray-700"
-          >
-            {darkMode ? <FaSun /> : <FaMoon />}
-          </button>
-          <button className="btn btn-ghost hover:bg-gray-700">
-            <FaCog />
-          </button>
-          <div className="dropdown">
-            <label tabIndex={0} className="avatar cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-purple-500"></div>
-            </label>
-            <ul
-              tabIndex={0}
-              className="dropdown-content menu p-2 shadow bg-gray-800 text-white rounded-box w-52"
+        {/* Right: Icons */}
+        <Box display="flex" alignItems="center">
+          <IconButton color="inherit">
+            <FaBell style={{ color: '#00ffba' }} />
+          </IconButton>
+          <IconButton color="inherit" onClick={toggleTheme}>
+            {isDarkMode ? <FaSun style={{ color: '#00ffba' }} /> : <FaMoon style={{ color: '#00ffba' }} />}
+          </IconButton>
+          <IconButton color="inherit">
+            <Avatar sx={{ bgcolor: theme.palette.primary.main }}>C</Avatar>
+          </IconButton>
+          <IconButton color="inherit">
+            <FaCog style={{ color: '#00ffba' }} />
+          </IconButton>
+        </Box>
+      </Toolbar>
+
+      {/* Green Divider */}
+      <Divider sx={{ bgcolor: '#00ffba', height: '2px' }} />
+
+      {/* Navigation Menus */}
+      <Toolbar sx={{ justifyContent: 'center', bgcolor: '#1a1a1a' }}>
+        {/* Dashboard Menu */}
+        <Button
+          color="inherit"
+          endIcon={<FaChevronDown />}
+          startIcon={<FaHome />}
+          onClick={handleMenuOpen}
+          sx={{ color: '#00ffba', textTransform: 'none', mx: 1 }}
+        >
+          My Dashboard
+        </Button>
+        <Menu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'basic-button',
+          }}
+          sx={{
+            '& .MuiPaper-root': {
+              bgcolor: '#1a1a1a',
+              color: 'white',
+              minWidth: menuAnchorEl ? `${menuAnchorEl.clientWidth}px` : 'auto', // Match the width of the button
+            },
+          }}
+        >
+          <MenuList>
+            <MenuItem
+              onClick={() => handleNavigation('/admin/dashboard')}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#00ffba',
+                '&:hover': {
+                  bgcolor: '#2d2d2d',
+                },
+              }}
             >
-              <li>
-                <a onClick={() => handleNavigation('/profile')}>
-                  <FaUserAlt />
-                  Profile
-                </a>
-              </li>
-              <li>
-                <a onClick={() => handleNavigation('/settings')}>
-                  <FaCog />
-                  Settings
-                </a>
-              </li>
-              <li>
-                <a onClick={() => handleNavigation('/notifications')}>
-                  <FaBell />
-                  Notifications
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+              <FiberManualRecord sx={{ fontSize: 8, color: '#00ffba', mr: 1 }} />
+              Analysis
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleNavigation('/dashboard/wallet')}
+              sx={{
+                color: 'white',
+                '&:hover': {
+                  bgcolor: '#2d2d2d',
+                },
+              }}
+            >
+              My wallet
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleNavigation('/dashboard/iot')}
+              sx={{
+                color: 'white',
+                '&:hover': {
+                  bgcolor: '#2d2d2d',
+                },
+              }}
+            >
+              IOT
+            </MenuItem>
+          </MenuList>
+        </Menu>
 
-      <div className="border-t-2 border-teal-400"></div>
-
-      {/* Navigation Menu */}
-      <div className="flex items-center justify-center py-3 bg-gray-900 border-b-2 border-teal-400">
-        <div className="flex space-x-8">
-          {[
-            {
-              label: 'Dashboard',
-              icon: <FaHome />,
-              items: [
-                { label: 'Анализ', path: '/dashboard' },
-                { label: 'Орлого', path: '/dashboard/wallet' },
-              ],
-            },
-            {
-              label: 'Төрөл',
-              icon: <FaStore />,
-              items: [
-                { label: 'Menu Нэмэх', path: '/menu/add' },
-                { label: 'Menu харах', path: '/menu/list' },
-                { label: 'Sub Category Нэмэх', path: '/subCategory/add' },
-                { label: 'Sub Category харах', path: '/subCategory/list' },
-              ],
-            },
-            {
-              label: 'Бүтээгдэхүүн',
-              icon: <FaBagShopping />,
-              items: [
-                { label: 'Нэмэх', path: '/product/add' },
-                { label: 'Агуулах харах', path: '/product/inventory' },
-              ],
-            },
-            {
-              label: 'Байгуулга',
-              icon: <FaClipboard />,
-              items: [
-                { label: 'Нэмэх', path: '/customer/calendar' },
-                { label: 'Захиалга хийх', path: '/customer/email' },
-                { label: 'Төлөвлөгөөт захиалга хийх', path: '/customer/files' },
-              ],
-            },
-            {
-              label: 'Хүргэлт',
-              icon: <FaCar />,
-              items: [
-                { label: 'Төлөв', path: '/delivery/invoice' },
-                { label: 'Буцаагдсан', path: '/delivery/faq' },
-                { label: 'Хүргэлтийн бүс', path: '/delivery/hurgelt' },
-              ],
-            },
-            {
-              label: 'Хэрэглэгч',
-              icon: <FaUserAlt />,
-              items: [
-                { label: 'Profile', path: '/account/profile' },
-                { label: 'Settings', path: '/account/settings' },
-              ],
-            },
-            {
-              label: 'Web Site Banner',
-              icon: <FaShieldAlt />,
-              items: [
-                { label: 'Нэмэх', path: '/auth/register' },
-                { label: 'Солих', path: '/auth/login' },
-              ],
-            },
-          ].map((menu, index) => (
-            <div key={index} className="dropdown">
-              <label
-                tabIndex={0}
-                className="btn btn-ghost text-teal-400 hover:text-teal-300 flex items-center space-x-2"
-              >
-                {menu.icon}
-                <span>{menu.label}</span>
-                <FaChevronDown />
-              </label>
-              <ul
-                tabIndex={0}
-                className="dropdown-content menu p-2 shadow bg-gray-800 text-white rounded-box w-52"
-              >
-                {menu.items.map((item, i) => (
-                  <li key={i}>
-                    <a
-                      onClick={() => handleNavigation(item.path)}
-                      className={currentPath === item.path ? activeMenuItemStyle : ''}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+        {/* Add more menus similarly */}
+        <Button
+          color="inherit"
+          endIcon={<FaChevronDown />}
+          startIcon={<FaStore />}
+          onClick={handleMenuOpen}
+          sx={{ color: '#00ffba', textTransform: 'none', mx: 1 }}
+        >
+          Төрөл
+        </Button>
+      </Toolbar>
+    </AppBar>
   );
 };
 

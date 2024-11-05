@@ -1,2 +1,2 @@
-export const adminLogin = 'admin/login'
-export const adminDashbard = 'admin/dashboard'
+export const adminLogin = '/admin/login'
+export const adminDashbard = '/admin/dashboard'

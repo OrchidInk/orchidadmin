@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import useTokenExpiration from '@/@core/utils/function/useTokenExpired';
-import AdminLayout from '@/@core/components/AdminLayout.tsx';
 import { adminDashbard, adminLogin } from '@/@core/utils/type/router';
+import Header from '@/@core/components/Navbar';
 
 const Home: React.FC = () => {
   const router = useRouter();
 
-  // usetokenexpiration();
 
    useEffect(() => {
     const token = localStorage.getItem('token');
@@ -33,8 +31,9 @@ const Home: React.FC = () => {
 
 
   return (
-    <AdminLayout children={undefined}>
-    </AdminLayout>
+    <Header>
+
+    </Header>
   );
 };
 
