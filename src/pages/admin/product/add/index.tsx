@@ -54,7 +54,8 @@ const Product = () => {
       formDataEn.append('subCategoryEnID', subCategoryEnID.toString());
       formDataEn.append('priceEn', priceEn);
       formDataEn.append('stockQuantity', stockQuantity.toString());
-      formDataEn.append('imagesPathEn', imagesPathEn);
+      formDataEn.append('file', imagesPathEn);
+      formDataEn.append('foldername', 'product-en');
       await axios.post('{{base_url}}/api/v1/superadmin/product/createEn', formDataEn);
       await axios.post('{{base_url}}/api/v1/superadmin/product/createImagesEn', formDataEn);
 
@@ -63,7 +64,8 @@ const Product = () => {
       formDataMn.append('subCategoryMnID', subCategoryMnID.toString());
       formDataMn.append('priceMn', priceMn);
       formDataMn.append('stockQuantity', stockQuantityMn.toString());
-      formDataMn.append('imagesPathMn', imagesPathMn);
+      formDataMn.append('file', imagesPathMn);
+      formDataMn.append('foldername', 'product-mn');
       await axios.post('{{base_url}}/api/v1/superadmin/product/createMn', formDataMn);
       await axios.post('{{base_url}}/api/v1/superadmin/product/createImagesMn', formDataMn);
 
@@ -80,13 +82,15 @@ const Product = () => {
   };
 
   // Handles image upload for general file upload API
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setImagePath: React.Dispatch<React.SetStateAction<File | null>>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setImagePath: React.Dispatch<React.SetStateAction<File | null>>, foldername: string) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       try {
         const formData = new FormData();
         formData.append('file', file);
-        await axios.post('{{base_url}}/api/v1/superadmin/file/create', formData);
+        formData.append('foldername', foldername);
+        const apiFileUrl = 'http://localhost:8000/api/v1/superadmin/file/create'
+        await axios.post(apiFileUrl, formData);
         setImagePath(file);
       } catch (error) {
         setSnackbarMessage('Failed to upload image. Please try again.');
@@ -186,7 +190,7 @@ const Product = () => {
                 />
                 <input
                   type="file"
-                  onChange={(e) => handleImageUpload(e, setImagesPathEn)}
+                  onChange={(e) => handleImageUpload(e, setImagesPathEn, 'product-en')}
                   style={{ color: '#ffffff', marginBottom: '16px' }}
                 />
               </Grid>
@@ -233,7 +237,7 @@ const Product = () => {
                 />
                 <input
                   type="file"
-                  onChange={(e) => handleImageUpload(e, setImagesPathMn)}
+                  onChange={(e) => handleImageUpload(e, setImagesPathMn, 'product-mn')}
                   style={{ color: '#ffffff', marginBottom: '16px' }}
                 />
               </Grid>
