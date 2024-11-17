@@ -124,7 +124,7 @@ const Header = () => {
                 fontWeight: activeItem === 'Analysis' ? 'bold' : 'normal',
               }}
             >
-             Анализ 
+              Анализ
             </MenuItem>
             <MenuItem
               onClick={() => handleNavigation(adminDashboardWallet, setMenuAnchorEl, 'Орлого')}
@@ -173,16 +173,6 @@ const Header = () => {
               Menu нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation(adminMenuList, setTypeAnchorEl, 'Menu харах')}
-              sx={{
-                color: activeItem === 'List Types' ? '#00ffba' : 'white',
-                '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'List Types' ? 'bold' : 'normal',
-              }}
-            >
-              Menu харах
-            </MenuItem>
-            <MenuItem
               onClick={() => handleNavigation(adminSubMenuAdd, setTypeAnchorEl, 'SubMenu нэмэх')}
               sx={{
                 color: activeItem === 'List Types' ? '#00ffba' : 'white',
@@ -192,7 +182,7 @@ const Header = () => {
             >
               SubMenu нэмэх
             </MenuItem>
-            <MenuItem
+            {/* <MenuItem
               onClick={() => handleNavigation(adminsubMenuList, setTypeAnchorEl, 'SubMenu харах')}
               sx={{
                 color: activeItem === 'List Types' ? '#00ffba' : 'white',
@@ -201,7 +191,7 @@ const Header = () => {
               }}
             >
               SubMenu харах
-            </MenuItem>
+            </MenuItem> */}
           </MenuList>
         </Menu>
 
@@ -350,7 +340,7 @@ const Header = () => {
           onClick={handleMenuOpen(setOrganizationAnchorEl)}
           sx={{ color: '#00ffba', textTransform: 'none', mx: 1 }}
         >
-         Хүргэлт 
+          Хүргэлт
         </Button>
         <Menu
           anchorEl={organizationAnchorEl}
