@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from "@/@core/components/Navbar";
 import {
   Box,
@@ -15,11 +15,26 @@ import {
   FormControl,
   InputLabel,
   Paper,
-  Grid
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from "@mui/material";
 import MuiAlert from '@mui/material/Alert';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import axios from 'axios';
+import { apiSuperAdminFileUrl, apiSuperAdminProduct } from '@/@core/utils/type/router';
+
+interface Product {
+  productName: string;
+  subCategoryID: number;
+  price: string;
+  stockQuantity: number;
+  imagesPath: string;
+}
 
 const Product = () => {
   const [productNameEn, setProductNameEn] = useState('');
@@ -38,6 +53,24 @@ const Product = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [productsEn, setProductsEn] = useState<Product[]>([]);
+  const [productsMn, setProductsMn] = useState<Product[]>([]);
+
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const responseEn = await axios.get(`${apiSuperAdminProduct}/listEn`);
+        setProductsEn(responseEn.data || []);
+
+        const responseMn = await axios.get(`${apiSuperAdminProduct}/listMn`);
+        setProductsMn(responseMn.data || []);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // Handles submission of product
   const handleAddProduct = async () => {
@@ -56,8 +89,8 @@ const Product = () => {
       formDataEn.append('stockQuantity', stockQuantity.toString());
       formDataEn.append('file', imagesPathEn);
       formDataEn.append('foldername', 'product-en');
-      await axios.post('{{base_url}}/api/v1/superadmin/product/createEn', formDataEn);
-      await axios.post('{{base_url}}/api/v1/superadmin/product/createImagesEn', formDataEn);
+      await axios.post(`${apiSuperAdminProduct}/createEn`, formDataEn);
+      await axios.post(`${apiSuperAdminProduct}/createImagesEn`, formDataEn);
 
       const formDataMn = new FormData();
       formDataMn.append('productNameMn', productNameMn);
@@ -66,8 +99,8 @@ const Product = () => {
       formDataMn.append('stockQuantity', stockQuantityMn.toString());
       formDataMn.append('file', imagesPathMn);
       formDataMn.append('foldername', 'product-mn');
-      await axios.post('{{base_url}}/api/v1/superadmin/product/createMn', formDataMn);
-      await axios.post('{{base_url}}/api/v1/superadmin/product/createImagesMn', formDataMn);
+      await axios.post(`${apiSuperAdminProduct}/createMn`, formDataMn);
+      await axios.post(`${apiSuperAdminProduct}/createImagesMn`, formDataMn);
 
       setSnackbarMessage('Product added successfully.');
       setSnackbarSeverity('success');
@@ -89,8 +122,7 @@ const Product = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('foldername', foldername);
-        const apiFileUrl = 'http://localhost:8000/api/v1/superadmin/file/create'
-        await axios.post(apiFileUrl, formData);
+        await axios.post(apiSuperAdminFileUrl, formData);
         setImagePath(file);
       } catch (error) {
         setSnackbarMessage('Failed to upload image. Please try again.');
@@ -139,6 +171,69 @@ const Product = () => {
         >
           Add Product
         </Button>
+
+        {/* Product Table */}
+        <TableContainer component={Paper} sx={{ backgroundColor: '#1a1a1a', mb: 4 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>Product Name (EN)</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>SubCategory ID (EN)</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>Price (EN)</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>Stock Quantity (EN)</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {productsEn.length > 0 ? (
+                productsEn.map((product, index) => (
+                  <TableRow key={index}>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.productName}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.subCategoryID}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.price}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.stockQuantity}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} sx={{ textAlign: 'center', color: '#999' }}>
+                    No products found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TableContainer component={Paper} sx={{ backgroundColor: '#1a1a1a', mb: 4 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>Product Name (MN)</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>SubCategory ID (MN)</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>Price (MN)</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>Stock Quantity (MN)</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {productsMn.length > 0 ? (
+                productsMn.map((product, index) => (
+                  <TableRow key={index}>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.productName}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.subCategoryID}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.price}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{product.stockQuantity}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} sx={{ textAlign: 'center', color: '#999' }}>
+                    No products found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         {/* Add Product Modal */}
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>

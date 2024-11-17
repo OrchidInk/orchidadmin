@@ -22,15 +22,29 @@ import {
   FaStore,
   FaShoppingBag,
   FaClipboard,
-  FaUserAlt,
-  FaUserAltSlash,
   FaUserClock,
   FaTaxi,
+  FaFlag,
 } from 'react-icons/fa';
 import NavbarSearch from '../Search/navbarSearch';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/router';
-import { adminDashboard, adminDashboardWallet, adminMenuAdd, adminMenuList, adminProductAdd, adminProductList, adminSubMenuAdd, adminsubMenuList } from '@/@core/utils/type/router';
+import {
+  adminDashboard,
+  adminDashboardWallet,
+  adminMenuAdd,
+  adminMenuList,
+  adminProductAdd,
+  adminProductList,
+  adminSubMenuAdd,
+  adminsubMenuList,
+  adminBannerAdd,
+  adminBannerList,
+  adminAdminAdd,
+  adminAdminList,
+  adminDeliveryAdd,
+  adminDeliveryList,
+} from '@/@core/utils/type/router';
 
 const Header = () => {
   const theme = useTheme();
@@ -43,6 +57,8 @@ const Header = () => {
   const [productAnchorEl, setProductAnchorEl] = useState<null | HTMLElement>(null);
   const [organizationAnchorEl, setOrganizationAnchorEl] = useState<null | HTMLElement>(null);
   const [adminAnchorEl, setAdminAnchorEl] = useState<null | HTMLElement>(null);
+  const [bannerAnchorEl, setBannerAnchorEl] = useState<null | HTMLElement>(null);
+  const [deliveryAnchorEl, setDeliveryAnchorEl] = useState<null | HTMLElement>(null);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -119,9 +135,9 @@ const Header = () => {
             <MenuItem
               onClick={() => handleNavigation(adminDashboard, setMenuAnchorEl, 'Анализ')}
               sx={{
-                color: activeItem === 'Analysis' ? '#00ffba' : 'white',
+                color: activeItem === 'Анализ' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Analysis' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Анализ' ? 'bold' : 'normal',
               }}
             >
               Анализ
@@ -129,9 +145,9 @@ const Header = () => {
             <MenuItem
               onClick={() => handleNavigation(adminDashboardWallet, setMenuAnchorEl, 'Орлого')}
               sx={{
-                color: activeItem === 'My Wallet' ? '#00ffba' : 'white',
+                color: activeItem === 'Орлого' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'My Wallet' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Орлого' ? 'bold' : 'normal',
               }}
             >
               Орлого
@@ -165,9 +181,9 @@ const Header = () => {
             <MenuItem
               onClick={() => handleNavigation(adminMenuAdd, setTypeAnchorEl, 'Menu нэмэх')}
               sx={{
-                color: activeItem === 'Add Type' ? '#00ffba' : 'white',
+                color: activeItem === 'Menu нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Add Type' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Menu нэмэх' ? 'bold' : 'normal',
               }}
             >
               Menu нэмэх
@@ -175,23 +191,13 @@ const Header = () => {
             <MenuItem
               onClick={() => handleNavigation(adminSubMenuAdd, setTypeAnchorEl, 'SubMenu нэмэх')}
               sx={{
-                color: activeItem === 'List Types' ? '#00ffba' : 'white',
+                color: activeItem === 'SubMenu нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'List Types' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'SubMenu нэмэх' ? 'bold' : 'normal',
               }}
             >
               SubMenu нэмэх
             </MenuItem>
-            {/* <MenuItem
-              onClick={() => handleNavigation(adminsubMenuList, setTypeAnchorEl, 'SubMenu харах')}
-              sx={{
-                color: activeItem === 'List Types' ? '#00ffba' : 'white',
-                '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'List Types' ? 'bold' : 'normal',
-              }}
-            >
-              SubMenu харах
-            </MenuItem> */}
           </MenuList>
         </Menu>
 
@@ -221,9 +227,9 @@ const Header = () => {
             <MenuItem
               onClick={() => handleNavigation(adminProductAdd, setProductAnchorEl, 'Бүтээгдэхүүн нэмэх')}
               sx={{
-                color: activeItem === 'Add Product' ? '#00ffba' : 'white',
+                color: activeItem === 'Бүтээгдэхүүн нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Add Product' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Бүтээгдэхүүн нэмэх' ? 'bold' : 'normal',
               }}
             >
               Бүтээгдэхүүн нэмэх
@@ -231,9 +237,9 @@ const Header = () => {
             <MenuItem
               onClick={() => handleNavigation(adminProductList, setProductAnchorEl, 'Бүтээгдэхүүний жагсаалт')}
               sx={{
-                color: activeItem === 'List Products' ? '#00ffba' : 'white',
+                color: activeItem === 'Бүтээгдэхүүний жагсаалт' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'List Products' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Бүтээгдэхүүний жагсаалт' ? 'bold' : 'normal',
               }}
             >
               Бүтээгдэхүүний жагсаалт
@@ -265,118 +271,164 @@ const Header = () => {
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation('/organization/overview', setOrganizationAnchorEl, 'Overview')}
+              onClick={() => handleNavigation('/org/add', setOrganizationAnchorEl, 'Байгууллага нэмэх')}
               sx={{
-                color: activeItem === 'Overview' ? '#00ffba' : 'white',
+                color: activeItem === 'Байгууллага нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Overview' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Байгууллага нэмэх' ? 'bold' : 'normal',
               }}
             >
-              Overview
+              Байгууллага нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation('/organization/settings', setOrganizationAnchorEl, 'Settings')}
+              onClick={() => handleNavigation('/org/list', setOrganizationAnchorEl, 'Байгууллага харах')}
               sx={{
-                color: activeItem === 'Settings' ? '#00ffba' : 'white',
+                color: activeItem === 'Байгууллага харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Settings' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Байгууллага харах' ? 'bold' : 'normal',
               }}
             >
-              Settings
+              Байгууллага харах
             </MenuItem>
           </MenuList>
-
         </Menu>
+
+        {/* Админ Menu */}
         <Button
           color="inherit"
           endIcon={<FaChevronDown />}
           startIcon={<FaUserClock />}
-          onClick={handleMenuOpen(setOrganizationAnchorEl)}
+          onClick={handleMenuOpen(setAdminAnchorEl)}
           sx={{ color: '#00ffba', textTransform: 'none', mx: 1 }}
         >
           Админ
         </Button>
         <Menu
-          anchorEl={organizationAnchorEl}
-          open={Boolean(organizationAnchorEl)}
-          onClose={handleMenuClose(setOrganizationAnchorEl)}
+          anchorEl={adminAnchorEl}
+          open={Boolean(adminAnchorEl)}
+          onClose={handleMenuClose(setAdminAnchorEl)}
           sx={{
             '& .MuiPaper-root': {
               bgcolor: '#1a1a1a',
               color: 'white',
-              minWidth: organizationAnchorEl ? `${organizationAnchorEl.clientWidth}px` : 'auto',
+              minWidth: adminAnchorEl ? `${adminAnchorEl.clientWidth}px` : 'auto',
             },
           }}
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation('/organization/overview', setOrganizationAnchorEl, 'Overview')}
+              onClick={() => handleNavigation(adminAdminAdd, setAdminAnchorEl, 'Админ нэмэх')}
               sx={{
-                color: activeItem === 'Overview' ? '#00ffba' : 'white',
+                color: activeItem === 'Админ нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Overview' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Админ нэмэх' ? 'bold' : 'normal',
               }}
             >
-              Overview
+              Админ нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation('/organization/settings', setOrganizationAnchorEl, 'Settings')}
+              onClick={() => handleNavigation(adminAdminList, setAdminAnchorEl, 'Админ харах')}
               sx={{
-                color: activeItem === 'Settings' ? '#00ffba' : 'white',
+                color: activeItem === 'Админ харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Settings' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Админ харах' ? 'bold' : 'normal',
               }}
             >
-              Settings
+              Админ харах
             </MenuItem>
           </MenuList>
-
         </Menu>
 
+        {/* Banner Menu */}
+        <Button
+          color="inherit"
+          endIcon={<FaChevronDown />}
+          startIcon={<FaFlag />}
+          onClick={handleMenuOpen(setBannerAnchorEl)}
+          sx={{ color: '#00ffba', textTransform: 'none', mx: 1 }}
+        >
+          Banner
+        </Button>
+        <Menu
+          anchorEl={bannerAnchorEl}
+          open={Boolean(bannerAnchorEl)}
+          onClose={handleMenuClose(setBannerAnchorEl)}
+          sx={{
+            '& .MuiPaper-root': {
+              bgcolor: '#1a1a1a',
+              color: 'white',
+              minWidth: bannerAnchorEl ? `${bannerAnchorEl.clientWidth}px` : 'auto',
+            },
+          }}
+        >
+          <MenuList>
+            <MenuItem
+              onClick={() => handleNavigation(adminBannerAdd, setBannerAnchorEl, 'Banner нэмэх')}
+              sx={{
+                color: activeItem === 'Banner нэмэх' ? '#00ffba' : 'white',
+                '&:hover': { bgcolor: '#2d2d2d' },
+                fontWeight: activeItem === 'Banner нэмэх' ? 'bold' : 'normal',
+              }}
+            >
+              Banner нэмэх
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleNavigation(adminBannerList, setBannerAnchorEl, 'Banner харах')}
+              sx={{
+                color: activeItem === 'Banner харах' ? '#00ffba' : 'white',
+                '&:hover': { bgcolor: '#2d2d2d' },
+                fontWeight: activeItem === 'Banner харах' ? 'bold' : 'normal',
+              }}
+            >
+              Banner харах
+            </MenuItem>
+          </MenuList>
+        </Menu>
+
+        {/* Хүргэлт Menu */}
         <Button
           color="inherit"
           endIcon={<FaChevronDown />}
           startIcon={<FaTaxi />}
-          onClick={handleMenuOpen(setOrganizationAnchorEl)}
+          onClick={handleMenuOpen(setDeliveryAnchorEl)}
           sx={{ color: '#00ffba', textTransform: 'none', mx: 1 }}
         >
           Хүргэлт
         </Button>
         <Menu
-          anchorEl={organizationAnchorEl}
-          open={Boolean(organizationAnchorEl)}
-          onClose={handleMenuClose(setOrganizationAnchorEl)}
+          anchorEl={deliveryAnchorEl}
+          open={Boolean(deliveryAnchorEl)}
+          onClose={handleMenuClose(setDeliveryAnchorEl)}
           sx={{
             '& .MuiPaper-root': {
               bgcolor: '#1a1a1a',
               color: 'white',
-              minWidth: organizationAnchorEl ? `${organizationAnchorEl.clientWidth}px` : 'auto',
+              minWidth: deliveryAnchorEl ? `${deliveryAnchorEl.clientWidth}px` : 'auto',
             },
           }}
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation('/organization/overview', setOrganizationAnchorEl, 'Overview')}
+              onClick={() => handleNavigation(adminDeliveryAdd, setDeliveryAnchorEl, 'Хүргэлт нэмэх')}
               sx={{
-                color: activeItem === 'Overview' ? '#00ffba' : 'white',
+                color: activeItem === 'Хүргэлт нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Overview' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Хүргэлт нэмэх' ? 'bold' : 'normal',
               }}
             >
-              Overview
+              Хүргэлт нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation('/organization/settings', setOrganizationAnchorEl, 'Settings')}
+              onClick={() => handleNavigation(adminDeliveryList, setDeliveryAnchorEl, 'Хүргэлт харах')}
               sx={{
-                color: activeItem === 'Settings' ? '#00ffba' : 'white',
+                color: activeItem === 'Хүргэлт харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Settings' ? 'bold' : 'normal',
+                fontWeight: activeItem === 'Хүргэлт харах' ? 'bold' : 'normal',
               }}
             >
-              Settings
+              Хүргэлт харах
             </MenuItem>
           </MenuList>
-
         </Menu>
       </Toolbar>
     </AppBar>
