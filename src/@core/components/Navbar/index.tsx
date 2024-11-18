@@ -44,6 +44,10 @@ import {
   adminAdminList,
   adminDeliveryAdd,
   adminDeliveryList,
+  adminOrgAdd,
+  adminOrgList,
+  adminAdminsAdd,
+  adminAdminsList,
 } from '@/@core/utils/type/router';
 
 const Header = () => {
@@ -271,7 +275,7 @@ const Header = () => {
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation('/org/add', setOrganizationAnchorEl, 'Байгууллага нэмэх')}
+              onClick={() => handleNavigation(adminOrgAdd, setOrganizationAnchorEl, 'Байгууллага нэмэх')}
               sx={{
                 color: activeItem === 'Байгууллага нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
@@ -281,7 +285,7 @@ const Header = () => {
               Байгууллага нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation('/org/list', setOrganizationAnchorEl, 'Байгууллага харах')}
+              onClick={() => handleNavigation(adminOrgList, setOrganizationAnchorEl, 'Байгууллага харах')}
               sx={{
                 color: activeItem === 'Байгууллага харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
@@ -317,7 +321,7 @@ const Header = () => {
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation(adminAdminAdd, setAdminAnchorEl, 'Админ нэмэх')}
+              onClick={() => handleNavigation(adminAdminsAdd, setAdminAnchorEl, 'Админ нэмэх')}
               sx={{
                 color: activeItem === 'Админ нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
@@ -327,7 +331,7 @@ const Header = () => {
               Админ нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation(adminAdminList, setAdminAnchorEl, 'Админ харах')}
+              onClick={() => handleNavigation(adminAdminsList, setAdminAnchorEl, 'Админ харах')}
               sx={{
                 color: activeItem === 'Админ харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
