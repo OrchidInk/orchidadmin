@@ -40,8 +40,8 @@ const OrgAdd = (props: Props) => {
     try {
       await axios.post(`${apiSuperAdminOrganization}/create`, {
         customerName: orgName,
-        contractStartDate: Math.floor(new Date(contractStartDate).getTime() / 1000),
-        contractEndDate: Math.floor(new Date(contractEndDate).getTime() / 1000),
+        contractStartDate: new Date(contractStartDate).toISOString(),
+        contractEndDate: new Date(contractEndDate).toISOString(),
         isActive
       });
 
@@ -61,7 +61,7 @@ const OrgAdd = (props: Props) => {
     setOrgName('');
     setContractStartDate('');
     setContractEndDate('');
-    setIsActive(true); // Reset to default true
+    setIsActive(true);
   };
 
   return (
@@ -69,25 +69,25 @@ const OrgAdd = (props: Props) => {
       <Header />
       <Box sx={{ backgroundColor: '#0d0d0d', minHeight: '100vh', color: '#ffffff', p: 4 }}>
         <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-          Add New Organization
+         Байгууллага нэмэх 
         </Typography>
         <Button
           variant="contained"
           onClick={() => setAddModalOpen(true)}
           sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', fontWeight: 'bold', mb: 3 }}
         >
-          Add Organization
+         Байгууллага нэмэх 
         </Button>
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
           <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>
-            Add New Organization
+            Шинээр Байгууллага бүртгэх
           </DialogTitle>
           <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Organization Name"
+                  label="Байгууллагын нэр"
                   variant="outlined"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
@@ -97,7 +97,7 @@ const OrgAdd = (props: Props) => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Contract Start Date"
+                  label="Гэрээ байгуулсан огноо"
                   type="date"
                   variant="outlined"
                   value={contractStartDate}
@@ -109,7 +109,7 @@ const OrgAdd = (props: Props) => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Contract End Date"
+                  label="Гэрээ дуусах огноо"
                   type="date"
                   variant="outlined"
                   value={contractEndDate}
@@ -118,7 +118,7 @@ const OrgAdd = (props: Props) => {
                   sx={{ mb: 2, input: { color: '#ffffff' }, label: { color: '#ffffff' } }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Is Active"
@@ -132,7 +132,7 @@ const OrgAdd = (props: Props) => {
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
                 </TextField>
-              </Grid>
+              </Grid> */}
             </Grid>
           </DialogContent>
           <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
