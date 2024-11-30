@@ -284,7 +284,7 @@ const Header = () => {
             >
               Байгууллага нэмэх
             </MenuItem>
-            <MenuItem
+            {/* <MenuItem
               onClick={() => handleNavigation(adminOrgList, setOrganizationAnchorEl, 'Байгууллага харах')}
               sx={{
                 color: activeItem === 'Байгууллага харах' ? '#00ffba' : 'white',
@@ -293,7 +293,7 @@ const Header = () => {
               }}
             >
               Байгууллага харах
-            </MenuItem>
+            </MenuItem> */}
           </MenuList>
         </Menu>
 
