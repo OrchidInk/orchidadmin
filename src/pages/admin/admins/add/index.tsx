@@ -21,8 +21,8 @@ import {
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import axios from "axios";
+import { apiSuperAdminList, apiSuperAdminRegister } from "@/@core/utils/type/router";
 
-const apiSuperAdminRegister = "{{base_url}}/api/v1/superadmin/register";
 
 interface Admin {
   id: number;
@@ -39,7 +39,7 @@ const AdminAdd = () => {
   const [firstname, setFirstname] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // Used only when adding a new admin
+  const [password, setPassword] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
@@ -47,15 +47,29 @@ const AdminAdd = () => {
   );
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch admins
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get(`${apiSuperAdminRegister}`);
-      setAdmins(response.data);
+      const response = await axios.get(apiSuperAdminList);
+      if (response.status === 200) {
+        const mappedAdmins = response.data.map((admin: any) => ({
+          id: admin.ID,
+          lastname: admin.LastName,
+          firstname: admin.FirstName,
+          username: admin.UserName,
+          email: admin.Email,
+        }));
+        setAdmins(mappedAdmins);
+      } else {
+        throw new Error("Failed to fetch admins");
+      }
     } catch (error) {
       console.error("Failed to fetch admins:", error);
+      setSnackbarMessage("Failed to fetch admins. Please check the API endpoint and try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
+
 
   useEffect(() => {
     fetchAdmins();
@@ -72,7 +86,7 @@ const AdminAdd = () => {
     try {
       if (editingAdmin) {
         // Update admin
-        await axios.put(`${apiSuperAdminRegister}/${editingAdmin.id}`, {
+        await axios.put(`${apiSuperAdminList}/${editingAdmin.id}`, {
           lastname,
           firstname,
           username,
@@ -97,7 +111,7 @@ const AdminAdd = () => {
       clearInputs();
       fetchAdmins();
     } catch (error) {
-      setSnackbarMessage("Failed to save admin. Please try again.");
+      setSnackbarMessage("Failed to save admin. Please check the API endpoint and try again.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
@@ -105,13 +119,13 @@ const AdminAdd = () => {
 
   const handleDeleteAdmin = async (id: number) => {
     try {
-      await axios.delete(`${apiSuperAdminRegister}/${id}`);
+      await axios.delete(`${apiSuperAdminList}/${id}`);
       setSnackbarMessage("Admin deleted successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       fetchAdmins();
     } catch (error) {
-      setSnackbarMessage("Failed to delete admin. Please try again.");
+      setSnackbarMessage("Failed to delete admin. Please check the API endpoint and try again.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }

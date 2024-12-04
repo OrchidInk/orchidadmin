@@ -45,9 +45,6 @@ import {
   adminDeliveryAdd,
   adminDeliveryList,
   adminOrgAdd,
-  adminOrgList,
-  adminAdminsAdd,
-  adminAdminsList,
 } from '@/@core/utils/type/router';
 
 const Header = () => {
@@ -285,7 +282,7 @@ const Header = () => {
               Байгууллага нэмэх
             </MenuItem>
             {/* <MenuItem
-              onClick={() => handleNavigation(adminOrgList, setOrganizationAnchorEl, 'Байгууллага харах')}
+              onClick={() => handleNavigation('/org/list', setOrganizationAnchorEl, 'Байгууллага харах')}
               sx={{
                 color: activeItem === 'Байгууллага харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
@@ -321,7 +318,7 @@ const Header = () => {
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation(adminAdminsAdd, setAdminAnchorEl, 'Админ нэмэх')}
+              onClick={() => handleNavigation(adminAdminAdd, setAdminAnchorEl, 'Админ нэмэх')}
               sx={{
                 color: activeItem === 'Админ нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
@@ -331,7 +328,7 @@ const Header = () => {
               Админ нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation(adminAdminsList, setAdminAnchorEl, 'Админ харах')}
+              onClick={() => handleNavigation(adminAdminList, setAdminAnchorEl, 'Админ харах')}
               sx={{
                 color: activeItem === 'Админ харах' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },

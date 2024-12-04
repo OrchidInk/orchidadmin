@@ -51,16 +51,19 @@ const OrgAdd = () => {
   const fetchOrganizations = async () => {
     try {
       const response = await axios.get(`${apiSuperAdminOrganization}/list`);
-      const data = response.data.map((org: any) => ({
+      const data = response.data && Array.isArray(response.data) ? response.data.map((org: any) => ({
         id: org.CustomerId,
         customerName: org.CustomerName,
         contractStartDate: org.ContractStartDate,
         contractEndDate: org.ContractEndDate,
         isActive: org.IsActive,
-      }));
+      })) : [];
       setOrganizations(data);
     } catch (error) {
       console.error('Failed to fetch organizations:', error);
+      setSnackbarMessage('Failed to fetch organizations. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 

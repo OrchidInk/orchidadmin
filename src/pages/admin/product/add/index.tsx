@@ -67,60 +67,60 @@ const Product = () => {
   const [productsMn, setProductsMn] = useState<Product[]>([]);
 
   // Fetch categories
- const fetchCategories = async () => {
-  setLoadingCategories(true);
-  try {
-    const [responseEn, responseMn] = await Promise.all([
-      axios.get(`http://localhost:8000/api/v1/superadmin/subCategory/listEn`),
-      axios.get(`http://localhost:8000/api/v1/superadmin/subCategory/listMn`),
-    ]);
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const [responseEn, responseMn] = await Promise.all([
+        axios.get(`http://localhost:8000/api/v1/superadmin/subCategory/listEn`),
+        axios.get(`http://localhost:8000/api/v1/superadmin/subCategory/listMn`),
+      ]);
 
-    // Map English categories
-    const categoriesEnMapped = responseEn.data.map((cat: any) => ({
-      id: cat.SubCategoryIDEn, // Correct field for English category ID
-      name: cat.SubCategoryNameEn, // Correct field for English category name
-    }));
+      // Map English categories
+      const categoriesEnMapped = responseEn.data?.map((cat: any) => ({
+        id: cat.SubCategoryIDEn, // Correct field for English category ID
+        name: cat.SubCategoryNameEn, // Correct field for English category name
+      })) || [];
 
-    // Map Mongolian categories
-    const categoriesMnMapped = responseMn.data.map((cat: any) => ({
-      id: cat.SubCategoryIDMn, // Correct field for Mongolian category ID
-      name: cat.SubCategoryNameMn, // Correct field for Mongolian category name
-    }));
+      // Map Mongolian categories
+      const categoriesMnMapped = responseMn.data?.map((cat: any) => ({
+        id: cat.SubCategoryIDMn, // Correct field for Mongolian category ID
+        name: cat.SubCategoryNameMn, // Correct field for Mongolian category name
+      })) || [];
 
-    setCategoriesEn(categoriesEnMapped);
-    setCategoriesMn(categoriesMnMapped);
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-    setSnackbarMessage('Failed to fetch categories. Please try again.');
-    setSnackbarSeverity('error');
-    setSnackbarOpen(true);
-  } finally {
-    setLoadingCategories(false);
-  }
-};
+      setCategoriesEn(categoriesEnMapped);
+      setCategoriesMn(categoriesMnMapped);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      setSnackbarMessage('Failed to fetch categories. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
 
   // Fetch products
   const fetchProducts = async () => {
     try {
       const responseEn = await axios.get(`${apiSuperAdminProduct}/listEn`);
-      const productsEnMapped = responseEn.data.map((product: any) => ({
+      const productsEnMapped = responseEn.data?.map((product: any) => ({
         productName: product.ProductNameEn,
         subCategoryID: product.SubCategoryIDEn,
         price: product.PriceEn,
         stockQuantity: product.StockQuantity,
         imagesPath: product.ImagesPathEn,
-      }));
+      })) || [];
       setProductsEn(productsEnMapped);
 
       const responseMn = await axios.get(`${apiSuperAdminProduct}/listMn`);
-      const productsMnMapped = responseMn.data.map((product: any) => ({
+      const productsMnMapped = responseMn.data?.map((product: any) => ({
         productName: product.ProductNameMn,
         subCategoryID: product.SubCategoryIDMn,
         price: product.PriceMn,
         stockQuantity: product.StockQuantity,
         imagesPath: product.ImagesPathMn,
-      }));
+      })) || [];
       setProductsMn(productsMnMapped);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -135,61 +135,61 @@ const Product = () => {
     fetchProducts();
   }, []);
 
-const handleAddProduct = async () => {
-  if (
-    !productNameEn ||
-    subCategoryEnID === null ||
-    !priceEn ||
-    stockQuantity === null ||
-    !imagesPathEn ||
-    !productNameMn ||
-    subCategoryMnID === null ||
-    !priceMn ||
-    stockQuantityMn === null ||
-    !imagesPathMn
-  ) {
-    setSnackbarMessage('All fields are required.');
-    setSnackbarSeverity('error');
-    setSnackbarOpen(true);
-    return;
-  }
+  const handleAddProduct = async () => {
+    if (
+      !productNameEn ||
+      subCategoryEnID === null ||
+      !priceEn ||
+      stockQuantity === null ||
+      !imagesPathEn ||
+      !productNameMn ||
+      subCategoryMnID === null ||
+      !priceMn ||
+      stockQuantityMn === null ||
+      !imagesPathMn
+    ) {
+      setSnackbarMessage('All fields are required.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
 
-  try {
-    // English Product Form Data
-    const formDataEn = {
-      productNameEN: productNameEn, // Match Go model
-      subCategoryEnId: subCategoryEnID, // Match Go model
-      priceEn: priceEn.toString(), // Ensure string type
-      stockQuantity: stockQuantity,
-      imagesPathEn: imagesPathEn,
-    };
+    try {
+      // English Product Form Data
+      const formDataEn = {
+        productNameEN: productNameEn, // Match Go model
+        subCategoryEnId: subCategoryEnID, // Match Go model
+        priceEn: priceEn.toString(), // Ensure string type
+        stockQuantity: stockQuantity,
+        imagesPathEn: imagesPathEn,
+      };
 
-    // Mongolian Product Form Data
-    const formDataMn = {
-      productNameMN: productNameMn, // Match Go model
-      subCategoryMnId: subCategoryMnID, // Match Go model
-      priceMn: priceMn.toString(), // Ensure string type
-      stockQuantity: stockQuantityMn,
-      imagesPathMn: imagesPathMn,
-    };
+      // Mongolian Product Form Data
+      const formDataMn = {
+        productNameMN: productNameMn, // Match Go model
+        subCategoryMnId: subCategoryMnID, // Match Go model
+        priceMn: priceMn.toString(), // Ensure string type
+        stockQuantity: stockQuantityMn,
+        imagesPathMn: imagesPathMn,
+      };
 
-    // API calls
-    await axios.post(`${apiSuperAdminProduct}/createEn`, formDataEn);
-    await axios.post(`${apiSuperAdminProduct}/createMn`, formDataMn);
+      // API calls
+      await axios.post(`${apiSuperAdminProduct}/createEn`, formDataEn);
+      await axios.post(`${apiSuperAdminProduct}/createMn`, formDataMn);
 
-    setSnackbarMessage('Product added successfully.');
-    setSnackbarSeverity('success');
-    setSnackbarOpen(true);
-    setAddModalOpen(false);
-    clearInputs();
-    fetchProducts();
-  } catch (error) {
-    console.error('Failed to add product:', error);
-    setSnackbarMessage('Failed to add product. Please try again.');
-    setSnackbarSeverity('error');
-    setSnackbarOpen(true);
-  }
-};
+      setSnackbarMessage('Product added successfully.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setAddModalOpen(false);
+      clearInputs();
+      fetchProducts();
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      setSnackbarMessage('Failed to add product. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
 
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setImagePath: React.Dispatch<React.SetStateAction<string>>) => {
