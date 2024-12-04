@@ -20,7 +20,7 @@ export const adminOrgList = "/admin/org/list"
 export const adminAdminsAdd = "/admin/admins/add"
 export const adminAdminsList = "/admin/admins/list"
 // Delivery
-export const adminDelivery = '/admin/delivery/add'
+export const adminDelivery = '/admin/delivery'
 
 
 

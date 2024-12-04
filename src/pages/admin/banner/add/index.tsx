@@ -1,140 +1,115 @@
-import React, { useState } from "react";
-import Header from "@/@core/components/Navbar";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Typography, Button, Modal, TextareaAutosize } from "@mui/material";
+import { Box, Typography, Button, Modal, TextareaAutosize, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import Header from "@/@core/components/Navbar";
 
 const BannerAdd = () => {
     const [base64Data, setBase64Data] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [bannerImageUrl, setBannerImageUrl] = useState<string>("");
+    const [banners, setBanners] = useState<Array<{ BannerId: number; BannerImageUrl: string }>>([]);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/v1/superadmin/banner/list")
+            .then(({ data }) => setBanners(data))
+            .catch((error) => alert("Error fetching banners: " + error));
+    }, []);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && file.size <= 5 * 1024 * 1024) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                const base64String = reader.result?.toString() || "";
-                setBase64Data(base64String);
-                setBannerImageUrl(base64String);
+                const base64 = reader.result?.toString() || "";
+                setBase64Data(base64);
+                setBannerImageUrl(base64);
             };
             reader.readAsDataURL(file);
+        } else {
+            alert("File too large or invalid.");
         }
     };
 
-    const openModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
-
-    const handleSubmit = async () => {
-        if (!bannerImageUrl) {
-            alert("Please upload a banner image.");
-            return;
-        }
-
-        try {
-            const response = await axios.post("http://localhost:8000/api/v1/superadmin/banner/create", {
-                bannerImageUrl,
-            });
-
-            if (response.status === 200) {
+    const handleSubmit = () => {
+        if (!bannerImageUrl) return alert("Please upload a banner image.");
+        axios.post("http://localhost:8000/api/v1/superadmin/banner/create", { BannerImageUrl: bannerImageUrl })
+            .then(() => {
                 alert("Banner added successfully!");
-                closeModal();
-                // Optionally, reset the state or perform additional actions
-            } else {
-                alert(`Failed to add banner: ${response.data.message}`);
-            }
-        } catch (error) {
-            console.error("Error adding banner:", error);
-            alert("An error occurred while adding the banner.");
-        }
+                setIsModalOpen(false);
+                setBase64Data(null);
+                axios.get("http://localhost:8000/api/v1/superadmin/banner/list")
+                    .then(({ data }) => setBanners(data));
+            })
+            .catch((error) => alert("Error adding banner: " + error));
     };
 
     return (
-        <>
+        <Box sx={{ backgroundColor: "#0d0d0d", color: "#fff", minHeight: "100vh", p: 4 }}>
             <Header />
-            <Box sx={{ backgroundColor: "#0d0d0d", minHeight: "100vh", color: "#ffffff", p: 4 }}>
-                <Typography variant="h4" gutterBottom>
-                    Upload Banner Image/Video/GIF
-                </Typography>
-                <Button
-                    variant="contained"
-                    onClick={openModal}
-                    sx={{ marginBottom: 3, backgroundColor: "#1976d2" }}
-                >
-                    Add Banner
-                </Button>
+            <Typography variant="h4" gutterBottom>Banner оруулах</Typography>
+            <Button variant="contained" sx={{ mb: 3 }} onClick={() => setIsModalOpen(true)}>Banner нэмэх</Button>
 
-                <Modal open={isModalOpen} onClose={closeModal} closeAfterTransition>
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            width: 400,
-                            bgcolor: "black",
-                            color: "white",
-                            boxShadow: 24,
-                            p: 4,
-                            borderRadius: 2,
-                        }}
-                    >
-                        <Typography variant="h6" gutterBottom>
-                            Add Banner
-                        </Typography>
-                        <input
-                            type="file"
-                            accept="image/*,video/*"
-                            onChange={handleFileChange}
-                            style={{ marginBottom: "20px" }}
-                        />
-                        <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSubmit}
-                                sx={{ backgroundColor: "#1976d2" }}
-                            >
-                                Submit
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                onClick={closeModal}
-                                sx={{ backgroundColor: "#d32f2f" }}
-                            >
-                                Close
-                            </Button>
-                        </Box>
-                    </Box>
-                </Modal>
+            {/* Modal for Uploading Banner */}
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Box sx={{ p: 4, bgcolor: "black", color: "white", borderRadius: 2, width: 400, mx: "auto", mt: "20%" }}>
+                    <Typography variant="h6" gutterBottom>Banner нэмэх</Typography>
+                    <input type="file" accept="image/*,video/*" onChange={handleFileChange} style={{ marginBottom: 20 }} />
+                    <Button onClick={handleSubmit} variant="contained" sx={{ mr: 2 }}>Submit</Button>
+                    <Button onClick={() => setIsModalOpen(false)} variant="contained" color="error">Close</Button>
+                </Box>
+            </Modal>
 
-                {base64Data && (
-                    <Box sx={{ mt: 4 }}>
-                        <Typography variant="h5" gutterBottom>
-                            Base64 Representation:
-                        </Typography>
-                        <TextareaAutosize
-                            value={base64Data}
-                            readOnly
-                            minRows={10}
-                            style={{
-                                width: "100%",
-                                backgroundColor: "#333",
-                                color: "#fff",
-                                padding: "10px",
-                                border: "none",
-                                borderRadius: "4px",
-                            }}
-                        />
-                    </Box>
-                )}
+            {/* Base64 Data Display */}
+            {base64Data && (
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h5" gutterBottom>Base64 Representation:</Typography>
+                    <TextareaAutosize
+                        value={base64Data}
+                        readOnly
+                        minRows={5}
+                        style={{ width: "100%", backgroundColor: "#333", color: "#fff", padding: "10px", borderRadius: 4 }}
+                    />
+                </Box>
+            )}
+
+            {/* Banners Table */}
+            <Box sx={{ mt: 4 }}>
+                <Typography variant="h4" gutterBottom>Banners</Typography>
+                <TableContainer component={Paper} sx={{ backgroundColor: "#1a1a1a" }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ color: "#fff" }}>Banner ID</TableCell>
+                                <TableCell sx={{ color: "#fff" }}>Banner Preview</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {banners.map(({ BannerId, BannerImageUrl }) => (
+                                <TableRow key={BannerId}>
+                                    <TableCell sx={{ color: "#fff" }}>{BannerId}</TableCell>
+                                    <TableCell>
+                                        {BannerImageUrl.startsWith("data:image/") ? (
+                                            <Box
+                                                component="img"
+                                                src={BannerImageUrl}
+                                                alt={`Banner ${BannerId}`}
+                                                sx={{
+                                                    width: "150px",
+                                                    height: "auto",
+                                                    borderRadius: 2,
+                                                }}
+                                            />
+                                        ) : (
+                                            <Typography color="error">Invalid Base64 Data</Typography>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Box>
-        </>
+        </Box>
     );
 };
 

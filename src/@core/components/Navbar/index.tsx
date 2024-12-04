@@ -45,6 +45,7 @@ import {
   adminDeliveryAdd,
   adminDeliveryList,
   adminOrgAdd,
+  adminDelivery,
 } from '@/@core/utils/type/router';
 
 const Header = () => {
@@ -410,16 +411,16 @@ const Header = () => {
         >
           <MenuList>
             <MenuItem
-              onClick={() => handleNavigation(adminDeliveryAdd, setDeliveryAnchorEl, 'Хүргэлт нэмэх')}
+              onClick={() => handleNavigation(adminDelivery, setDeliveryAnchorEl, 'Хүргэлт нэмэх')}
               sx={{
                 color: activeItem === 'Хүргэлт нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
                 fontWeight: activeItem === 'Хүргэлт нэмэх' ? 'bold' : 'normal',
               }}
             >
-              Хүргэлт нэмэх
+              Хүргэлт
             </MenuItem>
-            <MenuItem
+            {/* <MenuItem
               onClick={() => handleNavigation(adminDeliveryList, setDeliveryAnchorEl, 'Хүргэлт харах')}
               sx={{
                 color: activeItem === 'Хүргэлт харах' ? '#00ffba' : 'white',
@@ -428,7 +429,7 @@ const Header = () => {
               }}
             >
               Хүргэлт харах
-            </MenuItem>
+            </MenuItem> */}
           </MenuList>
         </Menu>
       </Toolbar>
