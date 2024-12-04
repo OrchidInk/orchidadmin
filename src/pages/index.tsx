@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { adminDashbard, adminLogin } from '@/@core/utils/type/router';
+import { adminDashboard, adminLogin } from '@/@core/utils/type/router';
 import Header from '@/@core/components/Navbar';
 
 const Home: React.FC = () => {
@@ -25,7 +25,7 @@ const Home: React.FC = () => {
       router.push(adminLogin);
     } else {
       console.log('Token is valid. Redirecting to dashboard.');
-      router.push(adminDashbard);
+      router.push(adminDashboard);
     }
   }, [router]);
 

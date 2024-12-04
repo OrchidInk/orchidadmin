@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { adminDashbard } from "@/@core/utils/type/router";
+import { adminDashboard } from "@/@core/utils/type/router";
 import { Button, TextField, Box, Typography, CircularProgress, Container, Switch } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -58,7 +58,7 @@ const Login = () => {
       });
 
       setTimeout(() => {
-        router.push(adminDashbard);
+        router.push(adminDashboard);
       }, 3000);
 
     } catch (error) {
