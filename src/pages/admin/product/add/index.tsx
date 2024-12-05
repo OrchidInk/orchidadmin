@@ -27,7 +27,7 @@ import {
 import MuiAlert from '@mui/material/Alert';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import axios from 'axios';
-import { apiSuperAdminProduct } from '@/@core/utils/type/router';
+import { apiSuperAdminProduct, BASEURL } from '@/@core/utils/type/router';
 
 interface Product {
   productName: string;
@@ -71,8 +71,8 @@ const Product = () => {
     setLoadingCategories(true);
     try {
       const [responseEn, responseMn] = await Promise.all([
-        axios.get(`http://localhost:8000/api/v1/superadmin/subCategory/listEn`),
-        axios.get(`http://localhost:8000/api/v1/superadmin/subCategory/listMn`),
+        axios.get(`${BASEURL}/api/v1/superadmin/subCategory/listEn`),
+        axios.get(`${BASEURL}/api/v1/superadmin/subCategory/listMn`),
       ]);
 
       // Map English categories

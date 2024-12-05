@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { adminDashboard } from "@/@core/utils/type/router";
+import { adminDashboard, BASEURL } from "@/@core/utils/type/router";
 import { Button, TextField, Box, Typography, CircularProgress, Container, Switch } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -36,14 +36,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/login`, {
+      const response = await axios.post(`${BASEURL}/api/v1/superadmin/login`, {
         username,
         password,
       });
 
       const { token } = response.data;
 
-      const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour expiration
+      const expirationTime = new Date().getTime() + 60 * 60 * 1000;
       localStorage.setItem('token', token);
       localStorage.setItem('token_expiration', expirationTime.toString());
 
