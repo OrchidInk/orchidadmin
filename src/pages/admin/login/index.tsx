@@ -60,7 +60,6 @@ const Login = () => {
       setTimeout(() => {
         router.push(adminDashboard);
       }, 3000);
-
     } catch (error) {
       toast.error('Login failed! Please check your credentials.', {
         position: "top-right",
