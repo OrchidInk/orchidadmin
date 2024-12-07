@@ -14,9 +14,7 @@ import {
   Legend,
 } from 'recharts';
 
-type Props = {};
 
-// Sample data for charts
 const data = [
   {
     month: 'Previous Month',
@@ -36,14 +34,14 @@ const data = [
   },
 ];
 
-const Index = (props: Props) => {
+const Index = () => {
   return (
     <Box sx={{ backgroundColor: '#1a1a1a', minHeight: '100vh', color: 'white' }}>
       <Header />
 
       <Box sx={{ padding: 4 }}>
         <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', color: '#00ffba' }}>
-            Борлуулалтын ашиг орлого
+          Борлуулалтын ашиг орлого
         </Typography>
 
         <Grid container spacing={4}>

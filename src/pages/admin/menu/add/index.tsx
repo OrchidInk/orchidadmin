@@ -22,7 +22,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import Header from '@/@core/components/Navbar';
 import MuiAlert from '@mui/material/Alert';
-import { adminLogin } from '@/@core/utils/type/router';
+import { adminLogin, BASEURL } from '@/@core/utils/type/router';
 
 interface Category {
   id: number;
@@ -37,7 +37,7 @@ const createCategoryEn = async (categoryNameEn: string) => {
       throw new Error('Token not found');
     }
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/createEn`;
+    const apiUrl = `${BASEURL}/api/v1/superadmin/category/createEn`;
     const response = await axios.post(apiUrl, { categoryNameEn }, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -61,7 +61,7 @@ const createCategoryMn = async (categoryNameMn: string) => {
       throw new Error('Token not found');
     }
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/createMn`;
+    const apiUrl = `${BASEURL}/api/v1/superadmin/category/createMn`;
     const response = await axios.post(apiUrl, { categoryNameMn }, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -85,8 +85,8 @@ const deleteCategory = async (categoryId: number) => {
       throw new Error('Token not found');
     }
 
-    const apiUrlEn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/deleteEn/${categoryId}`;
-    const apiUrlMn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/deleteMn/${categoryId}`;
+    const apiUrlEn = `${BASEURL}/api/v1/superadmin/category/deleteEn/${categoryId}`;
+    const apiUrlMn = `${BASEURL}/api/v1/superadmin/category/deleteMn/${categoryId}`;
 
     await Promise.all([
       axios.delete(apiUrlEn, { headers: { Authorization: `Bearer ${token}` } }),
@@ -125,8 +125,8 @@ const CategoryManagement = () => {
         return;
       }
 
-      const apiUrlEn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/listEn`;
-      const apiUrlMn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/listMn`;
+      const apiUrlEn = `${BASEURL}/api/v1/superadmin/category/listEn`;
+      const apiUrlMn = `${BASEURL}/api/v1/superadmin/category/listMn`;
 
       const [enResponse, mnResponse] = await Promise.all([
         axios.get(apiUrlEn, { headers: { Authorization: `Bearer ${token}` } }),
