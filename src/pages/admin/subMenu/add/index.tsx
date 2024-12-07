@@ -24,8 +24,6 @@ import {
 } from "@mui/material";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import MuiAlert from '@mui/material/Alert';
 import {
   addSubCategoryEn,

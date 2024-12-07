@@ -27,7 +27,7 @@ import {
 import MuiAlert from '@mui/material/Alert';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import axios from 'axios';
-import { apiSuperAdminProduct, BASEURL } from '@/@core/utils/type/router';
+import { apiSuperAdminProduct } from '@/@core/utils/type/router';
 
 interface Product {
   productName: string;
@@ -66,25 +66,26 @@ const Product = () => {
   const [productsEn, setProductsEn] = useState<Product[]>([]);
   const [productsMn, setProductsMn] = useState<Product[]>([]);
 
-  // Fetch categories
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
       const [responseEn, responseMn] = await Promise.all([
-        axios.get(`${BASEURL}/api/v1/superadmin/subCategory/listEn`),
-        axios.get(`${BASEURL}/api/v1/superadmin/subCategory/listMn`),
+        axios.get<{ SubCategoryIDEn: number; SubCategoryNameEn: string }[]>(
+          `http://localhost:8000/api/v1/superadmin/subCategory/listEn`
+        ),
+        axios.get<{ SubCategoryIDMn: number; SubCategoryNameMn: string }[]>(
+          `http://localhost:8000/api/v1/superadmin/subCategory/listMn`
+        ),
       ]);
 
-      // Map English categories
-      const categoriesEnMapped = responseEn.data?.map((cat: any) => ({
-        id: cat.SubCategoryIDEn, // Correct field for English category ID
-        name: cat.SubCategoryNameEn, // Correct field for English category name
+      const categoriesEnMapped = responseEn.data?.map((cat) => ({
+        id: cat.SubCategoryIDEn,
+        name: cat.SubCategoryNameEn,
       })) || [];
 
-      // Map Mongolian categories
-      const categoriesMnMapped = responseMn.data?.map((cat: any) => ({
-        id: cat.SubCategoryIDMn, // Correct field for Mongolian category ID
-        name: cat.SubCategoryNameMn, // Correct field for Mongolian category name
+      const categoriesMnMapped = responseMn.data?.map((cat) => ({
+        id: cat.SubCategoryIDMn,
+        name: cat.SubCategoryNameMn,
       })) || [];
 
       setCategoriesEn(categoriesEnMapped);
@@ -99,12 +100,12 @@ const Product = () => {
     }
   };
 
-
-  // Fetch products
   const fetchProducts = async () => {
     try {
-      const responseEn = await axios.get(`${apiSuperAdminProduct}/listEn`);
-      const productsEnMapped = responseEn.data?.map((product: any) => ({
+      const responseEn = await axios.get<{ ProductNameEn: string; SubCategoryIDEn: number; PriceEn: string; StockQuantity: number; ImagesPathEn: string }[]>(
+        `${apiSuperAdminProduct}/listEn`
+      );
+      const productsEnMapped = responseEn.data?.map((product) => ({
         productName: product.ProductNameEn,
         subCategoryID: product.SubCategoryIDEn,
         price: product.PriceEn,
@@ -113,8 +114,10 @@ const Product = () => {
       })) || [];
       setProductsEn(productsEnMapped);
 
-      const responseMn = await axios.get(`${apiSuperAdminProduct}/listMn`);
-      const productsMnMapped = responseMn.data?.map((product: any) => ({
+      const responseMn = await axios.get<{ ProductNameMn: string; SubCategoryIDMn: number; PriceMn: string; StockQuantity: number; ImagesPathMn: string }[]>(
+        `${apiSuperAdminProduct}/listMn`
+      );
+      const productsMnMapped = responseMn.data?.map((product) => ({
         productName: product.ProductNameMn,
         subCategoryID: product.SubCategoryIDMn,
         price: product.PriceMn,
@@ -155,25 +158,22 @@ const Product = () => {
     }
 
     try {
-      // English Product Form Data
       const formDataEn = {
-        productNameEN: productNameEn, // Match Go model
-        subCategoryEnId: subCategoryEnID, // Match Go model
-        priceEn: priceEn.toString(), // Ensure string type
-        stockQuantity: stockQuantity,
-        imagesPathEn: imagesPathEn,
+        productNameEN: productNameEn,
+        subCategoryEnId: subCategoryEnID,
+        priceEn: priceEn,
+        stockQuantity,
+        imagesPathEn,
       };
 
-      // Mongolian Product Form Data
       const formDataMn = {
-        productNameMN: productNameMn, // Match Go model
-        subCategoryMnId: subCategoryMnID, // Match Go model
-        priceMn: priceMn.toString(), // Ensure string type
+        productNameMN: productNameMn,
+        subCategoryMnId: subCategoryMnID,
+        priceMn: priceMn,
         stockQuantity: stockQuantityMn,
-        imagesPathMn: imagesPathMn,
+        imagesPathMn,
       };
 
-      // API calls
       await axios.post(`${apiSuperAdminProduct}/createEn`, formDataEn);
       await axios.post(`${apiSuperAdminProduct}/createMn`, formDataMn);
 
@@ -191,8 +191,7 @@ const Product = () => {
     }
   };
 
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setImagePath: React.Dispatch<React.SetStateAction<string>>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setImagePath: React.Dispatch<React.SetStateAction<string>>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       const reader = new FileReader();

@@ -61,6 +61,7 @@ const Login = () => {
         router.push(adminDashboard);
       }, 3000);
     } catch (error) {
+      console.error('Login failed:', error); // Log the error for debugging
       toast.error('Login failed! Please check your credentials.', {
         position: "top-right",
         autoClose: 3000,
