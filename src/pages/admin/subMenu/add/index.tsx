@@ -64,42 +64,44 @@ const SubMenuAdd = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const mnData = await fetchCategoriesMn();
-        const enData = await fetchCategoriesEn();
+        const mnData: Category[] = await fetchCategoriesMn();
+        const enData: Category[] = await fetchCategoriesEn();
         setMnCategories(mnData);
         setEnCategories(enData);
 
         // Extract subcategories from both English and Mongolian categories
         const extractedSubCategories: SubCategory[] = [];
-        mnData.forEach((category: any) => {
+        mnData.forEach((category: Category) => {
           if (category.subcategories) {
-            category.subcategories.forEach((subCategory: any) => {
+            category.subcategories.forEach((subCategory: SubCategory) => {
               extractedSubCategories.push({
-                subCategoryId: subCategory.subCategoryIDMn,
+                subCategoryId: subCategory.subCategoryId,
                 subCategoryNameEn: 'N/A', // Default to 'N/A' for English
-                subCategoryNameMn: subCategory.SubCategoryNameMN,
+                subCategoryNameMn: subCategory.subCategoryNameMn,
               });
             });
           }
         });
-        enData.forEach((category: any) => {
+
+        enData.forEach((category: Category) => {
           if (category.subcategories) {
-            category.subcategories.forEach((subCategory: any) => {
+            category.subcategories.forEach((subCategory: SubCategory) => {
               const existingSubCategory = extractedSubCategories.find(
-                (sc) => sc.subCategoryId === subCategory.subcategoryIDEN
+                (sc) => sc.subCategoryId === subCategory.subCategoryId
               );
               if (existingSubCategory) {
-                existingSubCategory.subCategoryNameEn = subCategory.SubCategoryNameEN;
+                existingSubCategory.subCategoryNameEn = subCategory.subCategoryNameEn;
               } else {
                 extractedSubCategories.push({
-                  subCategoryId: subCategory.subcategoryIDEN,
-                  subCategoryNameEn: subCategory.SubCategoryNameEN,
+                  subCategoryId: subCategory.subCategoryId,
+                  subCategoryNameEn: subCategory.subCategoryNameEn,
                   subCategoryNameMn: 'N/A', // Default to 'N/A' for Mongolian
                 });
               }
             });
           }
         });
+
         setSubCategories(extractedSubCategories);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
