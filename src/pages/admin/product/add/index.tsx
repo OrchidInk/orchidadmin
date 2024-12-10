@@ -71,10 +71,10 @@ const Product = () => {
     try {
       const [responseEn, responseMn] = await Promise.all([
         axios.get<{ SubCategoryIDEn: number; SubCategoryNameEn: string }[]>(
-          `http://localhost:8000/api/v1/superadmin/subCategory/listEn`
+          `http://103.50.205.86:9000/api/v1/superadmin/subCategory/listEn`
         ),
         axios.get<{ SubCategoryIDMn: number; SubCategoryNameMn: string }[]>(
-          `http://localhost:8000/api/v1/superadmin/subCategory/listMn`
+          `http://103.50.205.86:9000/api/v1/superadmin/subCategory/listMn`
         ),
       ]);
 

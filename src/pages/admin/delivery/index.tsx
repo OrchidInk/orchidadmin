@@ -8,7 +8,7 @@ const Delivery = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        axios.get("http://localhost:8000/api/v1/superadmin/delivery/list")
+        axios.get("http://103.50.205.86:9000/api/v1/superadmin/delivery/list")
             .then(({ data }) => setDeliveries(data))
             .catch((error) => setError("Failed to fetch deliveries: " + error.message));
     }, []);

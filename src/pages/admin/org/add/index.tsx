@@ -50,13 +50,18 @@ const OrgAdd = () => {
   const fetchOrganizations = async () => {
     try {
       const response = await axios.get(`${apiSuperAdminOrganization}/list`);
-      const data: Organization[] = response.data.map((org: { CustomerId: number; CustomerName: string; ContractStartDate: string; ContractEndDate: string; IsActive: boolean }) => ({
-        id: org.CustomerId,
-        customerName: org.CustomerName,
-        contractStartDate: org.ContractStartDate,
-        contractEndDate: org.ContractEndDate,
-        isActive: org.IsActive,
-      }));
+
+      // Ensure response.data is an array
+      const data = Array.isArray(response.data)
+        ? response.data.map((org: { CustomerId: number; CustomerName: string; ContractStartDate: string; ContractEndDate: string; IsActive: boolean }) => ({
+          id: org.CustomerId,
+          customerName: org.CustomerName,
+          contractStartDate: org.ContractStartDate,
+          contractEndDate: org.ContractEndDate,
+          isActive: org.IsActive,
+        }))
+        : [];
+
       setOrganizations(data);
     } catch (fetchError) {
       console.error('Failed to fetch organizations:', fetchError);
@@ -65,6 +70,7 @@ const OrgAdd = () => {
       setSnackbarOpen(true);
     }
   };
+
 
   useEffect(() => {
     fetchOrganizations();
