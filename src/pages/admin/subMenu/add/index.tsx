@@ -51,7 +51,6 @@ interface CategoryMn {
   subcategories?: SubCategoryMn[];
 }
 
-// Local SubCategory interface for unified data representation
 interface SubCategory {
   subCategoryId: number;
   subCategoryNameEn: string;
@@ -181,63 +180,114 @@ const SubMenuAdd = () => {
           </TableBody>
         </Table>
       </Paper>
-      <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
-        <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>Add SubCategory</DialogTitle>
-        <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel sx={{ color: '#ffffff' }}>Category (MN)</InputLabel>
-            <Select
-              value={categoryMnId || ''}
-              onChange={(e) => setCategoryMnId(Number(e.target.value))}
-              sx={{ color: '#ffffff' }}
-            >
-              {mnCategories.map((category) => (
-                <MenuItem key={category.categoryMnId} value={category.categoryMnId}>
-                  {category.categoryNameMn}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="SubCategory Name (MN)"
-            fullWidth
-            variant="outlined"
-            value={subCategoryMn}
-            onChange={(e) => setSubCategoryMn(e.target.value)}
-            sx={{ mb: 2, color: '#ffffff' }}
-          />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel sx={{ color: '#ffffff' }}>Category (EN)</InputLabel>
-            <Select
-              value={categoryEnId || ''}
-              onChange={(e) => setCategoryEnId(Number(e.target.value))}
-              sx={{ color: '#ffffff' }}
-            >
-              {enCategories.map((category) => (
-                <MenuItem key={category.categoryEnId} value={category.categoryEnId}>
-                  {category.categoryNameEn}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="SubCategory Name (EN)"
-            fullWidth
-            variant="outlined"
-            value={subCategoryEn}
-            onChange={(e) => setSubCategoryEn(e.target.value)}
-            sx={{ mb: 2, color: '#ffffff' }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
-          <Button onClick={() => setAddModalOpen(false)} sx={{ color: '#ffffff' }}>
-            Cancel
-          </Button>
-          <Button onClick={handleAdd} variant="contained" sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}>
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+            <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
+  <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>Add SubCategory</DialogTitle>
+  <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
+    <FormControl fullWidth sx={{ mb: 2 }}>
+      <InputLabel sx={{ color: '#ffffff' }}>Category (MN)</InputLabel>
+      <Select
+        value={categoryMnId || ''}
+        onChange={(e) => setCategoryMnId(Number(e.target.value))}
+        sx={{
+          color: '#ffffff',
+          '& .MuiSvgIcon-root': {
+            color: '#ffffff', // Change dropdown arrow color
+          },
+        }}
+      >
+        {mnCategories.map((category) => (
+          <MenuItem key={category.categoryMnId} value={category.categoryMnId}>
+            {category.categoryNameMn}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+    <TextField
+      label="SubCategory Name (MN)"
+      fullWidth
+      variant="outlined"
+      value={subCategoryMn}
+      onChange={(e) => setSubCategoryMn(e.target.value)}
+      sx={{
+        mb: 2,
+        '& .MuiInputBase-input': {
+          color: '#ffffff', // White text for input
+        },
+        '& .MuiInputLabel-root': {
+          color: '#ffffff', // White text for label
+        },
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': {
+            borderColor: '#ffffff', // Border color
+          },
+          '&:hover fieldset': {
+            borderColor: '#00ffba', // Hover border color
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: '#00ffba', // Focused border color
+          },
+        },
+      }}
+    />
+    <FormControl fullWidth sx={{ mb: 2 }}>
+      <InputLabel sx={{ color: '#ffffff' }}>Category (EN)</InputLabel>
+      <Select
+        value={categoryEnId || ''}
+        onChange={(e) => setCategoryEnId(Number(e.target.value))}
+        sx={{
+          color: '#ffffff',
+          '& .MuiSvgIcon-root': {
+            color: '#ffffff',
+          },
+        }}
+      >
+        {enCategories.map((category) => (
+          <MenuItem key={category.categoryEnId} value={category.categoryEnId}>
+            {category.categoryNameEn}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+    <TextField
+      label="SubCategory Name (EN)"
+      fullWidth
+      variant="outlined"
+      value={subCategoryEn}
+      onChange={(e) => setSubCategoryEn(e.target.value)}
+      sx={{
+        mb: 2,
+        '& .MuiInputBase-input': {
+          color: '#ffffff',
+        },
+        '& .MuiInputLabel-root': {
+          color: '#ffffff',
+        },
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': {
+            borderColor: '#ffffff',
+          },
+          '&:hover fieldset': {
+            borderColor: '#00ffba',
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: '#00ffba',
+          },
+        },
+      }}
+    />
+  </DialogContent>
+  <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
+    <Button onClick={() => setAddModalOpen(false)} sx={{ color: '#ffffff' }}>
+      Cancel
+    </Button>
+    <Button onClick={handleAdd} variant="contained" sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}>
+      Add
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
