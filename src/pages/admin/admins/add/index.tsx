@@ -20,9 +20,8 @@ import {
   TableRow,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { apiSuperAdminList, apiSuperAdminRegister } from "@/@core/utils/type/router";
-
 
 interface Admin {
   id: number;
@@ -42,26 +41,20 @@ const AdminAdd = () => {
   const [password, setPassword] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
-  );
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
   const [modalOpen, setModalOpen] = useState(false);
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get(apiSuperAdminList);
-      if (response.status === 200) {
-        const mappedAdmins = response.data.map((admin: any) => ({
-          id: admin.ID,
-          lastname: admin.LastName,
-          firstname: admin.FirstName,
-          username: admin.UserName,
-          email: admin.Email,
-        }));
-        setAdmins(mappedAdmins);
-      } else {
-        throw new Error("Failed to fetch admins");
-      }
+      const response: AxiosResponse<{ ID: number; LastName: string; FirstName: string; UserName: string; Email: string }[]> = await axios.get(apiSuperAdminList);
+      const mappedAdmins = response.data.map((admin) => ({
+        id: admin.ID,
+        lastname: admin.LastName,
+        firstname: admin.FirstName,
+        username: admin.UserName,
+        email: admin.Email,
+      }));
+      setAdmins(mappedAdmins);
     } catch (error) {
       console.error("Failed to fetch admins:", error);
       setSnackbarMessage("Failed to fetch admins. Please check the API endpoint and try again.");
@@ -69,7 +62,6 @@ const AdminAdd = () => {
       setSnackbarOpen(true);
     }
   };
-
 
   useEffect(() => {
     fetchAdmins();
@@ -85,7 +77,6 @@ const AdminAdd = () => {
 
     try {
       if (editingAdmin) {
-        // Update admin
         await axios.put(`${apiSuperAdminList}/${editingAdmin.id}`, {
           lastname,
           firstname,
@@ -94,7 +85,6 @@ const AdminAdd = () => {
         });
         setSnackbarMessage("Admin updated successfully.");
       } else {
-        // Add new admin
         await axios.post(apiSuperAdminRegister, {
           lastname,
           firstname,
@@ -111,6 +101,7 @@ const AdminAdd = () => {
       clearInputs();
       fetchAdmins();
     } catch (error) {
+      console.error("Save error:", error);
       setSnackbarMessage("Failed to save admin. Please check the API endpoint and try again.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -125,6 +116,7 @@ const AdminAdd = () => {
       setSnackbarOpen(true);
       fetchAdmins();
     } catch (error) {
+      console.error("Delete error:", error);
       setSnackbarMessage("Failed to delete admin. Please check the API endpoint and try again.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);

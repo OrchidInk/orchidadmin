@@ -20,17 +20,17 @@ export const adminOrgList = "/admin/org/list"
 export const adminAdminsAdd = "/admin/admins/add"
 export const adminAdminsList = "/admin/admins/list"
 // Delivery
-export const adminDelivery = '/admin/delivery/add'
+export const adminDelivery = '/admin/delivery'
 
-
-
+// BASEURK
+export const BASEURL = "http://103.50.205.86:9000"
 // Api
 export const adminAdminAdd = "/admin/admins/add"
 export const adminAdminList = ""
 export const adminDeliveryAdd = ""
 export const adminDeliveryList = ""
-export const apiSuperAdminFileUrl = 'http://localhost:8000/api/v1/superadmin/file/create'
-export const apiSuperAdminProduct = 'http://localhost:8000/api/v1/superadmin/product'
-export const apiSuperAdminOrganization = "http://localhost:8000/api/v1/superadmin/customer"
-export const apiSuperAdminList = "http://localhost:8000/api/v1/superadmin/user/list/superadmin";
-export const apiSuperAdminRegister = "http://localhost:8000/api/v1/superadmin/register"
+export const apiSuperAdminFileUrl = `${BASEURL}/api/v1/superadmin/file/create`
+export const apiSuperAdminProduct = `${BASEURL}/api/v1/superadmin/product`
+export const apiSuperAdminOrganization = `${BASEURL}/api/v1/superadmin/customer`
+export const apiSuperAdminList = `${BASEURL}/api/v1/superadmin/user/list/superadmin`;
+export const apiSuperAdminRegister = `${BASEURL}/api/v1/superadmin/register`

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import type { AxiosError } from 'axios';
 import {
   Box,
   Table,
@@ -12,17 +11,15 @@ import {
   TextField,
   Typography,
   Paper,
-  useMediaQuery,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Snackbar,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import Header from '@/@core/components/Navbar';
 import MuiAlert from '@mui/material/Alert';
-import { adminLogin } from '@/@core/utils/type/router';
+import Header from '@/@core/components/Navbar';
+import { BASEURL } from '@/@core/utils/type/router';
 
 interface Category {
   id: number;
@@ -30,88 +27,25 @@ interface Category {
   categoryNameMn: string;
 }
 
-const createCategoryEn = async (categoryNameEn: string) => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('Token not found');
-    }
+interface EnCategory {
+  categoryEnId: number;
+  categoryNameEn: string;
+}
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/createEn`;
-    const response = await axios.post(apiUrl, { categoryNameEn }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return response.data;
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response && axiosError.response.status === 401) {
-      console.error('Unauthorized. Redirecting to login.');
-      localStorage.removeItem('token');
-      window.location.href = adminLogin;
-    }
-    throw error;
-  }
-};
-
-const createCategoryMn = async (categoryNameMn: string) => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('Token not found');
-    }
-
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/createMn`;
-    const response = await axios.post(apiUrl, { categoryNameMn }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return response.data;
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response && axiosError.response.status === 401) {
-      console.error('Unauthorized. Redirecting to login.');
-      localStorage.removeItem('token');
-      window.location.href = adminLogin;
-    }
-    throw error;
-  }
-};
-
-const deleteCategory = async (categoryId: number) => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('Token not found');
-    }
-
-    const apiUrlEn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/deleteEn/${categoryId}`;
-    const apiUrlMn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/deleteMn/${categoryId}`;
-
-    await Promise.all([
-      axios.delete(apiUrlEn, { headers: { Authorization: `Bearer ${token}` } }),
-      axios.delete(apiUrlMn, { headers: { Authorization: `Bearer ${token}` } }),
-    ]);
-  } catch (error) {
-    throw error;
-  }
-};
+interface MnCategory {
+  categoryMnId: number;
+  categoryNameMn: string;
+}
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryEn, setNewCategoryEn] = useState('');
   const [newCategoryMn, setNewCategoryMn] = useState('');
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
-  const [editingCategoryEn, setEditingCategoryEn] = useState('');
-  const [editingCategoryMn, setEditingCategoryMn] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     fetchCategories();
@@ -125,20 +59,18 @@ const CategoryManagement = () => {
         return;
       }
 
-      const apiUrlEn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/listEn`;
-      const apiUrlMn = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/superadmin/category/listMn`;
+      const apiUrlEn = `${BASEURL}/api/v1/superadmin/category/listEn`;
+      const apiUrlMn = `${BASEURL}/api/v1/superadmin/category/listMn`;
 
-      const [enResponse, mnResponse] = await Promise.all([
-        axios.get(apiUrlEn, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(apiUrlMn, { headers: { Authorization: `Bearer ${token}` } }),
+      // Fetch English and Mongolian categories
+      const [enResponseData, mnResponseData] = await Promise.all([
+        axios.get<EnCategory[]>(apiUrlEn, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data),
+        axios.get<MnCategory[]>(apiUrlMn, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data),
       ]);
 
-      const enCategories = enResponse.data || [];
-      const mnCategories = mnResponse.data || [];
-
-      const mergedCategories = enCategories.map((enCategory: any) => {
-        const matchingMnCategory = mnCategories.find(
-          (mnCategory: any) => mnCategory.categoryMnId === enCategory.categoryEnId
+      const mergedCategories = enResponseData.map((enCategory: EnCategory) => {
+        const matchingMnCategory = mnResponseData.find(
+          (mnCategory: MnCategory) => mnCategory.categoryMnId === enCategory.categoryEnId
         );
 
         return {
@@ -164,23 +96,28 @@ const CategoryManagement = () => {
     }
 
     try {
-      const enResult = await createCategoryEn(newCategoryEn);
-      const mnResult = await createCategoryMn(newCategoryMn);
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found.');
 
-      if (enResult && mnResult) {
-        const newCategory: Category = {
-          id: enResult.categoryId, // Assuming that the category ID is returned from the response
-          categoryNameEn: newCategoryEn,
-          categoryNameMn: newCategoryMn,
-        };
+      const apiUrlEn = `${BASEURL}/api/v1/superadmin/category/createEn`;
+      const apiUrlMn = `${BASEURL}/api/v1/superadmin/category/createMn`;
 
-        setCategories([...categories, newCategory]);
-        setNewCategoryEn('');
-        setNewCategoryMn('');
-        setAddModalOpen(false);
-        setSnackbarMessage('Category added successfully.');
-        setSnackbarOpen(true);
-      }
+      const [enResponse] = await Promise.all([
+        axios.post(apiUrlEn, { categoryNameEn: newCategoryEn }, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.post(apiUrlMn, { categoryNameMn: newCategoryMn }, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      setCategories([...categories, {
+        id: enResponse.data.categoryId,
+        categoryNameEn: newCategoryEn,
+        categoryNameMn: newCategoryMn,
+      }]);
+
+      setNewCategoryEn('');
+      setNewCategoryMn('');
+      setAddModalOpen(false);
+      setSnackbarMessage('Category added successfully.');
+      setSnackbarOpen(true);
     } catch (error) {
       console.error('Failed to add category:', error);
       setSnackbarMessage('Failed to add category. Please try again.');
@@ -189,18 +126,28 @@ const CategoryManagement = () => {
   };
 
   const handleDeleteCategory = async () => {
-    if (categoryToDelete !== null) {
-      try {
-        await deleteCategory(categoryToDelete);
-        setCategories(categories.filter((category) => category.id !== categoryToDelete));
-        setDeleteModalOpen(false);
-        setSnackbarMessage('Category deleted successfully.');
-        setSnackbarOpen(true);
-      } catch (error) {
-        console.error('Failed to delete category:', error);
-        setSnackbarMessage('Failed to delete category. Please try again.');
-        setSnackbarOpen(true);
-      }
+    if (!categoryToDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found.');
+
+      const apiUrlEn = `${BASEURL}/api/v1/superadmin/category/deleteEn/${categoryToDelete}`;
+      const apiUrlMn = `${BASEURL}/api/v1/superadmin/category/deleteMn/${categoryToDelete}`;
+
+      await Promise.all([
+        axios.delete(apiUrlEn, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.delete(apiUrlMn, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      setCategories(categories.filter((category) => category.id !== categoryToDelete));
+      setDeleteModalOpen(false);
+      setSnackbarMessage('Category deleted successfully.');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      setSnackbarMessage('Failed to delete category. Please try again.');
+      setSnackbarOpen(true);
     }
   };
 
@@ -211,20 +158,10 @@ const CategoryManagement = () => {
   return (
     <Box sx={{ backgroundColor: '#0d0d0d', minHeight: '100vh', color: '#ffffff' }}>
       <Header />
-      <Box
-        sx={{
-          p: 4,
-          borderRadius: 2,
-          boxShadow: 3,
-          mt: 4,
-          mx: 'auto',
-          width: isMobile ? '90%' : '60%',
-        }}
-      >
+      <Box sx={{ p: 4 }}>
         <Typography variant="h5" sx={{ mb: 3, color: '#ffffff', fontWeight: 'bold' }}>
           Category Management
         </Typography>
-
         <Button
           variant="contained"
           onClick={() => setAddModalOpen(true)}
@@ -238,9 +175,8 @@ const CategoryManagement = () => {
         >
           Add Category
         </Button>
-
         <Paper elevation={3} sx={{ overflowX: 'auto', bgcolor: '#1a1a1a', p: 2, borderRadius: 1 }}>
-          <Table size={isMobile ? 'small' : 'medium'}>
+          <Table>
             <TableHead>
               <TableRow>
                 <TableCell sx={{ color: '#ffffff', fontWeight: 'bold' }}>ID</TableCell>
@@ -250,102 +186,85 @@ const CategoryManagement = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories.length > 0 ? (
-                categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell sx={{ color: '#ffffff' }}>{category.id}</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>{category.categoryNameEn}</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>{category.categoryNameMn}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                          setCategoryToDelete(category.id);
-                          setDeleteModalOpen(true);
-                        }}
-                        sx={{ fontWeight: 'bold' }}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} sx={{ color: '#ffffff', textAlign: 'center' }}>
-                    No categories found.
+              {categories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell sx={{ color: '#ffffff' }}>{category.id}</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>{category.categoryNameEn}</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>{category.categoryNameMn}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        setCategoryToDelete(category.id);
+                        setDeleteModalOpen(true);
+                      }}
+                      sx={{ fontWeight: 'bold' }}
+                    >
+                      Delete
+                    </Button>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </Paper>
-
-        {/* Add Category Modal */}
-        <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
-          <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>Add New Category</DialogTitle>
-          <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Category Name (EN)"
-              fullWidth
-              variant="outlined"
-              value={newCategoryEn}
-              onChange={(e) => setNewCategoryEn(e.target.value)}
-              sx={{ mb: 2, input: { color: '#ffffff' }, label: { color: '#ffffff' } }}
-            />
-            <TextField
-              margin="dense"
-              label="Category Name (MN)"
-              fullWidth
-              variant="outlined"
-              value={newCategoryMn}
-              onChange={(e) => setNewCategoryMn(e.target.value)}
-              sx={{ input: { color: '#ffffff' }, label: { color: '#ffffff' } }}
-            />
-          </DialogContent>
-          <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
-            <Button onClick={() => setAddModalOpen(false)} sx={{ color: '#ffffff' }}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddCategory} variant="contained" color="primary">
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Delete Category Modal */}
-        <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
-          <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>Delete Category</DialogTitle>
-          <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
-            <Typography sx={{ color: '#ffffff' }}>
-              Are you sure you want to delete this category?
-            </Typography>
-          </DialogContent>
-          <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
-            <Button onClick={() => setDeleteModalOpen(false)} sx={{ color: '#ffffff' }}>
-              Cancel
-            </Button>
-            <Button onClick={handleDeleteCategory} variant="contained" color="error">
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Snackbar */}
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={3000}
-          onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <MuiAlert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-            {snackbarMessage}
-          </MuiAlert>
-        </Snackbar>
       </Box>
+      <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
+        <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>Add Category</DialogTitle>
+        <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
+          <TextField
+            fullWidth
+            label="Category Name (EN)"
+            variant="outlined"
+            value={newCategoryEn}
+            onChange={(e) => setNewCategoryEn(e.target.value)}
+            sx={{ mb: 2, input: { color: '#ffffff' }, label: { color: '#ffffff' } }}
+          />
+          <TextField
+            fullWidth
+            label="Category Name (MN)"
+            variant="outlined"
+            value={newCategoryMn}
+            onChange={(e) => setNewCategoryMn(e.target.value)}
+            sx={{ input: { color: '#ffffff' }, label: { color: '#ffffff' } }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
+          <Button onClick={() => setAddModalOpen(false)} sx={{ color: '#ffffff' }}>
+            Cancel
+          </Button>
+          <Button onClick={handleAddCategory} variant="contained" color="primary">
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
+        <DialogTitle sx={{ color: '#ffffff', backgroundColor: '#1a1a1a' }}>Delete Category</DialogTitle>
+        <DialogContent sx={{ backgroundColor: '#1a1a1a' }}>
+          <Typography sx={{ color: '#ffffff' }}>
+            Are you sure you want to delete this category?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ backgroundColor: '#1a1a1a' }}>
+          <Button onClick={() => setDeleteModalOpen(false)} sx={{ color: '#ffffff' }}>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteCategory} variant="contained" color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 };

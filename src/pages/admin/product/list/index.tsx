@@ -11,6 +11,16 @@ import {
 import axios from 'axios';
 import { apiSuperAdminProduct } from '@/@core/utils/type/router';
 
+interface ProductResponse {
+    ProductNameEn?: string;
+    ProductNameMn?: string;
+    PriceEn?: string;
+    PriceMn?: string;
+    StockQuantity: number;
+    ImagesPathEn?: string;
+    ImagesPathMn?: string;
+}
+
 interface Product {
     productName: string;
     price: string;
@@ -26,24 +36,26 @@ const ProductList = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const responseEn = await axios.get(`${apiSuperAdminProduct}/listEn`);
-                console.log("English Products:", responseEn.data); // Debugging
+                const responseEn = await axios.get<ProductResponse[]>(`${apiSuperAdminProduct}/listEn`);
+                console.log("English Products:", responseEn.data);
+
                 // Map the response to match the structure used in the UI
-                const formattedProductsEn = responseEn.data.map((product: any) => ({
-                    productName: product.ProductNameEn,
-                    price: product.PriceEn,
+                const formattedProductsEn: Product[] = responseEn.data.map((product) => ({
+                    productName: product.ProductNameEn || "Unknown Product",
+                    price: product.PriceEn || "0.00",
                     stockQuantity: product.StockQuantity,
-                    imagesPath: product.ImagesPathEn, // No further formatting needed
+                    imagesPath: product.ImagesPathEn || "", // Handle missing image paths
                 }));
                 setProductsEn(formattedProductsEn);
 
-                const responseMn = await axios.get(`${apiSuperAdminProduct}/listMn`);
-                console.log("Mongolian Products:", responseMn.data); // Debugging
-                const formattedProductsMn = responseMn.data.map((product: any) => ({
-                    productName: product.ProductNameMn,
-                    price: product.PriceMn,
+                const responseMn = await axios.get<ProductResponse[]>(`${apiSuperAdminProduct}/listMn`);
+                console.log("Mongolian Products:", responseMn.data);
+
+                const formattedProductsMn: Product[] = responseMn.data.map((product) => ({
+                    productName: product.ProductNameMn || "Unknown Product",
+                    price: product.PriceMn || "0.00",
                     stockQuantity: product.StockQuantity,
-                    imagesPath: product.ImagesPathMn,
+                    imagesPath: product.ImagesPathMn || "",
                 }));
                 setProductsMn(formattedProductsMn);
             } catch (error) {
@@ -54,7 +66,7 @@ const ProductList = () => {
     }, []);
 
     return (
-        <Box sx={{ backgroundColor: '#0d0d0d',  color: '#ffffff'}}>
+        <Box sx={{ backgroundColor: '#0d0d0d', color: '#ffffff' }}>
             <Header />
             <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold', textAlign: 'center' }}>
                 Product List
@@ -72,7 +84,7 @@ const ProductList = () => {
                                 <CardMedia
                                     component="img"
                                     height="140"
-                                    image={product.imagesPath} // Use directly without formatting
+                                    image={product.imagesPath}
                                     alt={product.productName || "Product Image"}
                                     sx={{ objectFit: 'cover', borderRadius: '4px 4px 0 0' }}
                                 />
@@ -86,10 +98,10 @@ const ProductList = () => {
                                         {product.productName}
                                     </Typography>
                                     <Typography variant="body2" color="#ffffff">
-                                        Price: ${product.price || "N/A"}
+                                        Price: ${product.price}
                                     </Typography>
                                     <Typography variant="body2" color="#ffffff">
-                                        Stock: {product.stockQuantity || 0}
+                                        Stock: {product.stockQuantity}
                                     </Typography>
                                 </CardContent>
                             </Card>
@@ -114,7 +126,7 @@ const ProductList = () => {
                                 <CardMedia
                                     component="img"
                                     height="140"
-                                    image={product.imagesPath} // Use directly without formatting
+                                    image={product.imagesPath}
                                     alt={product.productName || "Product Image"}
                                     sx={{ objectFit: 'cover', borderRadius: '4px 4px 0 0' }}
                                 />
@@ -128,10 +140,10 @@ const ProductList = () => {
                                         {product.productName}
                                     </Typography>
                                     <Typography variant="body2" color="#ffffff">
-                                        Price: ₮{product.price || "N/A"}
+                                        Price: ₮{product.price}
                                     </Typography>
                                     <Typography variant="body2" color="#ffffff">
-                                        Stock: {product.stockQuantity || 0}
+                                        Stock: {product.stockQuantity}
                                     </Typography>
                                 </CardContent>
                             </Card>
