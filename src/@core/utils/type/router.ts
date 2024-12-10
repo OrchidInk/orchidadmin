@@ -21,7 +21,6 @@ export const adminAdminsAdd = "/admin/admins/add"
 export const adminAdminsList = "/admin/admins/list"
 // Delivery
 export const adminDelivery = '/admin/delivery'
-
 // BASEURK
 export const BASEURL = "http://103.50.205.86:9000"
 // Api

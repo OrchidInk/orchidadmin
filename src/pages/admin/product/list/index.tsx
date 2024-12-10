@@ -14,7 +14,8 @@ import { useRouter } from 'next/router'; // Import useRouter
 import { apiSuperAdminProduct } from '@/@core/utils/type/router';
 
 interface ProductResponse {
-    ProductId: number; // Add ProductId to identify the product
+    ProductEnID: number; // Add ProductId to identify the product
+    ProductMnID: number;
     ProductNameEn?: string;
     ProductNameMn?: string;
     PriceEn?: string;
@@ -43,28 +44,38 @@ const ProductList = () => {
             try {
                 // Fetch English Products
                 const responseEn = await axios.get<ProductResponse[]>(`${apiSuperAdminProduct}/listEn`);
-                console.log("English Products:", responseEn.data);
+                console.log("English Products Response:", responseEn.data);
 
-                const formattedProductsEn: Product[] = responseEn.data.map((product) => ({
-                    id: product.ProductId, // Use ProductId for routing
-                    productName: product.ProductNameEn || "Unknown Product",
-                    price: product.PriceEn || "0.00",
-                    stockQuantity: product.StockQuantity,
-                    imagesPath: product.ImagesPathEn || "", // Handle missing image paths
-                }));
+                const formattedProductsEn: Product[] = responseEn.data.map((product, index) => {
+                    if (!product.ProductEnID) {
+                        console.warn("Missing ProductEnID in English product:", product);
+                    }
+                    return {
+                        id: product.ProductEnID || index, // Use ProductEnID, fallback to index
+                        productName: product.ProductNameEn || "Unknown Product",
+                        price: product.PriceEn || "0.00",
+                        stockQuantity: product.StockQuantity,
+                        imagesPath: product.ImagesPathEn || "", // Handle missing image paths
+                    };
+                });
                 setProductsEn(formattedProductsEn);
 
                 // Fetch Mongolian Products
                 const responseMn = await axios.get<ProductResponse[]>(`${apiSuperAdminProduct}/listMn`);
-                console.log("Mongolian Products:", responseMn.data);
+                console.log("Mongolian Products Response:", responseMn.data);
 
-                const formattedProductsMn: Product[] = responseMn.data.map((product) => ({
-                    id: product.ProductId, // Use ProductId for routing
-                    productName: product.ProductNameMn || "Unknown Product",
-                    price: product.PriceMn || "0.00",
-                    stockQuantity: product.StockQuantity,
-                    imagesPath: product.ImagesPathMn || "",
-                }));
+                const formattedProductsMn: Product[] = responseMn.data.map((product, index) => {
+                    if (!product.ProductMnID) {
+                        console.warn("Missing ProductMnID in Mongolian product:", product);
+                    }
+                    return {
+                        id: product.ProductMnID || index, // Use ProductMnID, fallback to index
+                        productName: product.ProductNameMn || "Unknown Product",
+                        price: product.PriceMn || "0.00",
+                        stockQuantity: product.StockQuantity,
+                        imagesPath: product.ImagesPathMn || "",
+                    };
+                });
                 setProductsMn(formattedProductsMn);
             } catch (error) {
                 console.error('Failed to fetch products:', error);
@@ -73,9 +84,10 @@ const ProductList = () => {
         fetchProducts();
     }, []);
 
-    const handleViewDetails = (id: number) => {
-        router.push(`/product/detail/${id}`); // Navigates to /product/detail/[id]
-    };
+const handleViewDetails = (id: number, type: 'en' | 'mn') => {
+    router.push(`/admin/product/detail/${id}?type=${type}`);
+};
+
 
 
     return (
@@ -120,7 +132,7 @@ const ProductList = () => {
                                         variant="contained"
                                         size="small"
                                         sx={{ mt: 2, backgroundColor: '#00ffba', color: '#0d0d0d' }}
-                                        onClick={() => handleViewDetails(product.id)} // Navigate to detail page
+                                        onClick={() => handleViewDetails(product.id, 'en')}
                                     >
                                         Дэлгэрэнгүй
                                     </Button>
@@ -170,7 +182,7 @@ const ProductList = () => {
                                         variant="contained"
                                         size="small"
                                         sx={{ mt: 2, backgroundColor: '#00ffba', color: '#0d0d0d' }}
-                                        onClick={() => handleViewDetails(product.id)} // Navigate to detail page
+                                        onClick={() => handleViewDetails(product.id, 'mn')}
                                     >
                                         Дэлгэрэнгүй
                                     </Button>
