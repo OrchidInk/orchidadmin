@@ -5,7 +5,6 @@ import {
     Typography,
     Button,
     Modal,
-    TextareaAutosize,
     Table,
     TableBody,
     TableCell,
@@ -46,6 +45,7 @@ const BannerAdd = () => {
             alert("File too large or invalid.");
         }
     };
+    console.log(base64Data)
 
     const handleSubmit = () => {
         if (!bannerImageUrl) return alert("Please upload a banner image.");
