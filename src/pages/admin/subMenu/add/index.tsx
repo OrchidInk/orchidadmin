@@ -24,6 +24,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import MuiAlert from '@mui/material/Alert';
 import { AxiosError } from 'axios';
 import { fetchCategoriesEn, fetchCategoriesMn, addSubCategoryEn, addSubCategoryMn } from '@/pages/api/submenu';
+import Header from '@/@core/components/Navbar';
 
 // Interfaces for response data
 interface SubCategoryEn {
@@ -148,6 +149,7 @@ const SubMenuAdd = () => {
 
   return (
     <Box sx={{ backgroundColor: '#0d0d0d', minHeight: '100vh', color: '#ffffff' }}>
+      <Header />
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold', p: 2 }}>
         SubCategory Management
       </Typography>
