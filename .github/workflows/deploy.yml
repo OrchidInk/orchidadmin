@@ -1,0 +1,44 @@
+name: Deploy Next.js App
+
+on:
+  push:
+    branches:
+      - master # Trigger the workflow when changes are pushed to master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up SSH
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    # Step 3: Deploy to the server
+    - name: Deploy and Restart Next.js
+      run: |
+        ssh -o StrictHostKeyChecking=no cloudmn@103.50.205.86 << 'EOF'
+          # Navigate to your project directory
+          cd /home/cloudmn/orchidadmin
+
+          # Pull the latest changes
+          git pull origin master
+
+          # Install dependencies
+          npm install
+
+          # Build the Next.js project
+          npm run build
+
+          # Restart the app with PM2
+          pm2 restart orchid-admin || pm2 start npm --name "orchid-admin" -- start
+
+          # Optional: Save PM2 state
+          pm2 save
+        EOF
