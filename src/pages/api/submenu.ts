@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
-const BASE_URL = 'http://103.50.205.86:9000/api/v1/superadmin/subCategory';
-const BASE_URLs = 'http://103.50.205.86:9000/api/v1/superadmin/category';
+const BASE_URL = 'https://api.orchid.mn/api/v1/superadmin/subCategory';
+const BASE_URLs = 'https://api.orchid.mn/api/v1/superadmin/category';
 
 const getToken = () => {
     if (typeof window !== 'undefined') {
