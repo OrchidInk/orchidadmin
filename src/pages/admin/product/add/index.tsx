@@ -273,6 +273,22 @@ const Product = () => {
                 <TextField fullWidth label="Stock Quantity" type="number" value={stockQuantity || ''} onChange={(e) => setStockQuantity(Number(e.target.value))} />
                 <input type="file" onChange={handleImageUploadEn} style={{ marginTop: 16 }} />
                 <TextField fullWidth label="DescriptionEn" value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} />
+                <TextField fullWidth label="BrandEn" value={brandEn} onChange={(e)=>setBrandEn(e.target.value)}/>
+                <TextField fullWidth label="ManufacturedCountryEn" value={manufacturedCountryEn} onChange={(e)=> setManufacturedCountryEn(e.target.value)}/>
+                <TextField fullWidth label="ColorEn" value={colorEn} onChange={(e)=>setColorEn(e.target.value)}/>
+                <TextField fullWidth label="SizeEn" value={sizeEn} onChange={(e)=>setSizeEn(e.target.value)} />
+                <TextField fullWidth label="PenoutEn" value={penOutEn} onChange={(e)=>setPenOutEn(e.target.value)}/>
+                <TextField fullWidth label="FeaturesEn" value={featuresEn} onChange={(e)=>setFeaturesEn(e.target.value)}/>
+                <TextField fullWidth label="MaterialEn" value={materialEn} onChange={(e)=>setMaterialEn(e.target.value)}/>
+                <TextField fullWidth label="StapleSizeEn" value={stapleSizeEn} onChange={(e)=>setStapleSizeEn(e.target.value)}/>
+                <TextField fullWidth label="CapacityEn" value={capacityEn} onChange={(e)=>setCapacityEn(e.target.value)} />
+                <TextField fullWidth label="WeigthEn" value={weightEn} onChange={(e)=>setWeightEn(e.target.value)}/>
+                <TextField fullWidth label="ThicknessEn" value={thicknessEn} onChange={(e)=>setThinknessEn(e.target.value)}/>
+                <TextField fullWidth label="PackagingEn" value={packagingEn} onChange={(e)=>setPackagingEn(e.target.value)} />
+                <TextField fullWidth label="ProductCodeEn" value={productCodeEn} onChange={(e)=>setProductCodeEn(e.target.value)} />
+                <TextField fullWidth label="CostPriceEn" value={costPriceEn} onChange={(e)=>setCostPriceEn(e.target.value)} />
+                <TextField fullWidth label="RetailPriceEn" value={retailPriceEn} onChange={(e)=>setRetailPriceEn(e.target.value)} />
+                <TextField fullWidth label="WarehouesStockEn" type="number" value={warehouseStockEn || ''} onChange={(e) => setWarehouseStockEn(Number(e.target.value))} />
               </Grid>
 
               {/* Mongolian Product Form */}
@@ -296,6 +312,22 @@ const Product = () => {
                 <TextField fullWidth label="Stock Quantity" type="number" value={stockQuantity || ''} onChange={(e) => setStockQuantity(Number(e.target.value))} />
                 <input type="file" onChange={handleImageUploadMn} style={{ marginTop: 16 }} />
                 <TextField fullWidth label="DescriptionMn" value={descriptionMn} onChange={(e) => setDescriptionMn(e.target.value)} />
+                <TextField fullWidth label="BrandMn" value={brandMn} onChange={(e)=>setBrandMn(e.target.value)}/>
+                <TextField fullWidth label="ManufacturedCountryMn" value={manufacturedCountryMn} onChange={(e)=> setManufacturedCountryMn(e.target.value)}/>
+                <TextField fullWidth label="ColorMn" value={colorMn} onChange={(e)=>setColorMn(e.target.value)}/>
+                <TextField fullWidth label="SizeMn" value={sizeMn} onChange={(e)=>setSizeMn(e.target.value)} />
+                <TextField fullWidth label="PenoutMn" value={penOutMn} onChange={(e)=>setPenOutMn(e.target.value)}/>
+                <TextField fullWidth label="FeaturesMn" value={featuresMn} onChange={(e)=>setFeaturesMn(e.target.value)}/>
+                <TextField fullWidth label="MaterialMn" value={materialMn} onChange={(e)=>setMaterialMn(e.target.value)}/>
+                <TextField fullWidth label="StapleSizeMn" value={stapleSizeMn} onChange={(e)=>setStapleSizeMn(e.target.value)}/>
+                <TextField fullWidth label="CapacityMn" value={capacityMn} onChange={(e)=>setCapacityMn(e.target.value)} />
+                <TextField fullWidth label="WeigthMn" value={weightMn} onChange={(e)=>setWeightMn(e.target.value)}/>
+                <TextField fullWidth label="ThicknessMn" value={thicknessMn} onChange={(e)=>setThinknessMn(e.target.value)}/>
+                <TextField fullWidth label="PackagingMn" value={packagingMn} onChange={(e)=>setPackagingMn(e.target.value)} />
+                <TextField fullWidth label="ProductCodeMn" value={productCodeMn} onChange={(e)=>setProductCodeMn(e.target.value)} />
+                <TextField fullWidth label="CostPriceMn" value={costPriceMn} onChange={(e)=>setCostPriceMn(e.target.value)} />
+                <TextField fullWidth label="RetailPriceMn" value={retailPriceMn} onChange={(e)=>setRetailPriceMn(e.target.value)} />
+                <TextField fullWidth label="WarehouesStockMn" type="number" value={warehouseStockMn || ''} onChange={(e) => setWarehouseStockMn(Number(e.target.value))} />
               </Grid>
             </Grid>
           </DialogContent>
