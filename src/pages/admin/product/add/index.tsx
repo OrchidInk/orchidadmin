@@ -71,10 +71,10 @@ const Product = () => {
     try {
       const [responseEn, responseMn] = await Promise.all([
         axios.get<{ SubCategoryIDEn: number; SubCategoryNameEn: string }[]>(
-          `http://103.50.205.86:9000/api/v1/superadmin/subCategory/listEn`
+          `https://api.orchid.mn/api/v1/superadmin/subCategory/listEn`
         ),
         axios.get<{ SubCategoryIDMn: number; SubCategoryNameMn: string }[]>(
-          `http://103.50.205.86:9000/api/v1/superadmin/subCategory/listMn`
+          `https://api.orchid.mn/api/v1/superadmin/subCategory/listMn`
         ),
       ]);
 

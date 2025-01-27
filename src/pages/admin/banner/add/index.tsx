@@ -25,14 +25,13 @@ const BannerAdd = () => {
     // State for delete confirmation modal
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [bannerToDelete, setBannerToDelete] = useState<number | null>(null);
-
     useEffect(() => {
         fetchBanners();
     }, []);
 
     const fetchBanners = async () => {
         try {
-            const { data } = await axios.get("http://103.50.205.86:9000/api/v1/superadmin/banner/list");
+            const { data } = await axios.get("https://api.orchid.mn/api/v1/superadmin/banner/list");
             setBanners(data);
         } catch (error) {
             alert("Error fetching banners: " + error);
@@ -57,7 +56,7 @@ const BannerAdd = () => {
         if (!bannerImageUrl) return alert("Please upload a banner image.");
 
         try {
-            await axios.post("http://103.50.205.86:9000/api/v1/superadmin/banner/create", {
+            await axios.post("https://api.orchid.mn/api/v1/superadmin/banner/create", {
                 BannerImageUrl: bannerImageUrl,
             });
             alert("Banner added successfully!");
@@ -78,7 +77,7 @@ const BannerAdd = () => {
         if (!editingBanner) return;
 
         try {
-            await axios.put("http://103.50.205.86:9000/api/v1/superadmin/banner/update", {
+            await axios.put("https://api.orchid.mn/api/v1/superadmin/banner/update", {
                 BannerId: editingBanner.BannerId,
                 BannerImageUrl: bannerImageUrl,
             });
@@ -96,7 +95,7 @@ const BannerAdd = () => {
 
         try {
             const response = await axios.delete(
-                `http://103.50.205.86:9000/api/v1/superadmin/banner/delete/${bannerToDelete}`
+                `https://api.orchid.mn/api/v1/superadmin/banner/delete/${bannerToDelete}`
             );
 
             if (response.status === 200) {
@@ -123,7 +122,7 @@ const BannerAdd = () => {
     };
 
     return (
-        <Box sx={{ backgroundColor: "#0d0d0d", color: "#fff", minHeight: "100vh", p: 4 }}>
+        <Box sx={{ backgroundColor: "#0d0d0d", color: "#fff", minHeight: "100vh"  }}>
             <Header />
             <Typography variant="h4" gutterBottom>
                 Banner Management

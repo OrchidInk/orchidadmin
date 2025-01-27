@@ -50,7 +50,7 @@ const ProductDetail: React.FC = () => {
 
     // Fetch product details using the `id` and `type`
     axios
-      .get<Product>(`http://103.50.205.86:9000/api/v1/superadmin/product/${endpoint}`, {
+      .get<Product>(`https://api.orchid.mn/api/v1/superadmin/product/${endpoint}`, {
         headers: {
           Authorization: 'Bearer <your-auth-token>', // Replace with your actual token
           'Content-Type': 'application/json',
