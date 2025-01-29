@@ -165,19 +165,49 @@ const Product = () => {
     const productDataEn = {
       ProductNameEn: productNameEn,
       SubCategoryEnID: subCategoryEnID,
-      PriceEn: priceEn,
+      PriceEn: parseFloat(priceEn).toFixed(2),
       StockQuantity: stockQuantity,
       ImagesPathEn: imagesPathEn,
-      descriptionEn: descriptionEn,
+      DescriptionEn: descriptionEn,
+      BrandEn: brandEn,
+      ManufacturedCountryEn: manufacturedCountryEn, 
+      ColorEn: colorEn,
+      SizeEn: sizeEn,
+      PenOutEn: penOutEn,
+      FeaturesEn: featuresEn,
+      StapleSizeEn: stapleSizeEn,
+      CapacityEn: capacityEn,
+      WeightEn: weightEn,
+      ThicknessEn: thicknessEn,
+      PackagingEn: packagingEn,
+      ProductCodeEn: productCodeEn,
+      CostPriceEn: parseFloat(costPriceEn).toFixed(2),
+      RetailPriceEn: parseFloat(retailPriceEn).toFixed(2),
+      WarehouseStockEn: warehouseStockEn
     };
 
     const productDataMn = {
       ProductNameMn: productNameMn,
       SubCategoryMnID: subCategoryMnID,
-      PriceMn: priceMn,
+      PriceMn: parseFloat(priceMn).toFixed(2),
       StockQuantity: stockQuantity,
       ImagesPathMn: imagesPathMn,
-      descriptionMn: descriptionMn,
+      DescriptionMn: descriptionMn,
+      BrandMn: brandMn,
+      ManufacturedCountryMn: manufacturedCountryMn,
+      ColorMn: colorMn,
+      SizeMn: sizeMn,
+      PenOutMn: penOutMn,
+      FeaturesMn: featuresMn,
+      StapleSizeMn: stapleSizeMn,
+      CapacityMn: capacityMn,
+      WeightMn: weightMn,
+      ThicknessMn: thicknessMn,
+      PackagingMn: packagingMn,
+      ProductCodeMn: productCodeMn,
+      CostPriceMn: parseFloat(costPriceMn).toFixed(2),
+      RetailPriceMn: parseFloat(retailPriceMn).toFixed(2),
+      WarehouseStockMn: warehouseStockMn
     };
 
     try {

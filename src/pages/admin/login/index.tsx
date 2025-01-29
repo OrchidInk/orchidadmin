@@ -62,7 +62,7 @@ const Login = () => {
       }, 3000);
     } catch (error) {
       console.error('Login failed:', error); // Log the error for debugging
-      toast.error('Login failed! Please check your credentials.', {
+      toast.error('Нууц үг эсхүл Нэвтрэх нэр 2 ийн нэг нь буруу байна.', {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
