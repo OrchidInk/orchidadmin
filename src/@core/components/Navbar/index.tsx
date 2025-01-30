@@ -34,10 +34,10 @@ import {
   adminDashboardWallet,
   adminMenuAdd,
   adminProductAdd,
-  adminProductList,
+  // adminProductList,
   adminSubMenuAdd,
   adminBannerAdd,
-  adminBannerList,
+  // adminBannerList,
   adminAdminAdd,
   adminAdminList,
   adminOrgAdd,
@@ -232,7 +232,7 @@ const Header = () => {
             >
               Бүтээгдэхүүн нэмэх
             </MenuItem>
-            <MenuItem
+            {/* <MenuItem
               onClick={() => handleNavigation(adminProductList, setProductAnchorEl, 'Бүтээгдэхүүний жагсаалт')}
               sx={{
                 color: activeItem === 'Бүтээгдэхүүний жагсаалт' ? '#00ffba' : 'white',
@@ -241,7 +241,7 @@ const Header = () => {
               }}
             >
               Бүтээгдэхүүний жагсаалт
-            </MenuItem>
+            </MenuItem> */}
           </MenuList>
         </Menu>
 
@@ -370,7 +370,7 @@ const Header = () => {
             >
               Banner нэмэх
             </MenuItem>
-            <MenuItem
+            {/* <MenuItem
               onClick={() => handleNavigation(adminBannerList, setBannerAnchorEl, 'Banner харах')}
               sx={{
                 color: activeItem === 'Banner харах' ? '#00ffba' : 'white',
@@ -379,7 +379,7 @@ const Header = () => {
               }}
             >
               Banner харах
-            </MenuItem>
+            </MenuItem> */}
           </MenuList>
         </Menu>
 

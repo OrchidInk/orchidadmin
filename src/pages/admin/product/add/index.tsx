@@ -34,6 +34,7 @@ interface Category {
 
 
 interface ProductEn {
+  MaterialEn: unknown;
   ProductEnID: number;
   ProductNameEn: string;
   SubCategoryIDEn: number;
@@ -52,6 +53,9 @@ interface ProductEn {
 }
 
 interface ProductMn {
+  InstructionsMn: unknown;
+  UsageMn: unknown;
+  MaterialMn: unknown;
   ProductMnID: number;
   ProductNameMn: string;
   SubCategoryIDMn: number;
@@ -125,6 +129,11 @@ const Product = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
+  const [editingProductEn, setEditingProductEn] = useState<ProductEn | null>(null);
+  const [editingProductMn, setEditingProductMn] = useState<ProductMn | null>(null);
+
+  const [updateModalEnOpen, setUpdateModalEnOpen] = useState(false);
+  const [updateModalMnOpen, setUpdateModalMnOpen] = useState(false);
   // Fetch categories for both EN and MN
   const fetchCategories = async () => {
     try {
@@ -152,20 +161,20 @@ const Product = () => {
   };
 
   // Fetch products for both EN and MN
-const fetchProducts = async () => {
-  try {
-    const [responseEn, responseMn] = await Promise.all([
-      api.get<ProductEn[]>('/product/listEn'),
-      api.get<ProductMn[]>('/product/listMn'),
-    ]);
-    setProductsEn(responseEn.data);
-    setProductsMn(responseMn.data);
-  } catch {
-    setSnackbarMessage('Failed to fetch products. Please try again.');
-    setSnackbarSeverity('error');
-    setSnackbarOpen(true);
-  }
-};
+  const fetchProducts = async () => {
+    try {
+      const [responseEn, responseMn] = await Promise.all([
+        api.get<ProductEn[]>('/product/listEn'),
+        api.get<ProductMn[]>('/product/listMn'),
+      ]);
+      setProductsEn(responseEn.data);
+      setProductsMn(responseMn.data);
+    } catch {
+      setSnackbarMessage('Failed to fetch products. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
 
 
   useEffect(() => {
@@ -254,6 +263,20 @@ const fetchProducts = async () => {
     setPriceMn('');
     setImagesPathMn('');
   };
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, lang: "en" | "mn") => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (lang === "en" && editingProductEn) {
+          setEditingProductEn({ ...editingProductEn, ImagesPathEn: reader.result as string });
+        } else if (lang === "mn" && editingProductMn) {
+          setEditingProductMn({ ...editingProductMn, ImagesPathMn: reader.result as string });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Handle image upload
   const handleImageUploadEn = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,6 +301,41 @@ const fetchProducts = async () => {
     }
   };
 
+
+  // Handle update modal open
+  const handleUpdateClickEn = (product: ProductEn) => {
+    setEditingProductEn(product);
+    setUpdateModalEnOpen(true);
+  };
+
+  const handleUpdateClickMn = (product: ProductMn) => {
+    setEditingProductMn(product);
+    setUpdateModalMnOpen(true);
+  };
+
+  // Handle product update
+  const handleUpdateProduct = async () => {
+    try {
+      if (editingProductEn) {
+        await api.patch(`/product/updateEn/${editingProductEn.ProductEnID}`, editingProductEn);
+      }
+      if (editingProductMn) {
+        await api.patch(`/product/updateMn/${editingProductMn.ProductMnID}`, editingProductMn);
+      }
+
+      setSnackbarMessage('Product updated successfully.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setUpdateModalEnOpen(false);
+      setUpdateModalMnOpen(false);
+      fetchProducts();
+    } catch {
+      setSnackbarMessage('Failed to update product. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -294,93 +352,114 @@ const fetchProducts = async () => {
         </Button>
 
         {/* Display fetched products (Optional) */}
-<Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
-<TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell sx={{ color: '#fff' }}>Image</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
-        <TableCell sx={{color: '#fff'}}>Manufactured Country En</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
-        <TableCell sx={{color: '#fff'}}>RetailPriceEn</TableCell>
-        <TableCell sx={{color: '#fff'}}>ColorEn</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {productsEn.map((product) => (
-        <TableRow key={product.ProductEnID}>
-          <TableCell>
-            <Avatar
-              src={product.ImagesPathEn}
-              alt={product.ProductNameEn}
-              sx={{ width: 50, height: 50 }}
-            />
-          </TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.ProductNameEn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.BrandEn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDEn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>₮{product.PriceEn}</TableCell>
-          <TableCell sx={{color: '#fff'}}>{product.ManufacturedCountryEn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.StockQuantity}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockEn}</TableCell>
-          <TableCell sx={{color: '#fff'}}>₮{product.RetailPriceEn}</TableCell>
-          <TableCell sx={{color: '#fff'}}>{product.ColorEn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{new Date(product.CreatedAt.Time).toLocaleString()}</TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
+        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
+        <TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#fff' }}>Image</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Manufactured Country En</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>RetailPriceEn</TableCell>
+                <TableCell sx={{ color: '#fff' }}>ColorEn</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {productsEn.map((product) => (
+                <TableRow key={product.ProductEnID}>
+                  <TableCell>
+                    <Avatar
+                      src={product.ImagesPathEn}
+                      alt={product.ProductNameEn}
+                      sx={{ width: 50, height: 50 }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ProductNameEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.BrandEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.PriceEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.StockQuantity}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ColorEn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{new Date(product.CreatedAt.Time).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
+                      onClick={() => handleUpdateClickEn(product)}
+                    >
+                      Update
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-<Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
-<TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell sx={{ color: '#fff' }}>Image</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
-        <TableCell sx={{color: '#fff'}}>Manufactured Country Mn</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
-        <TableCell sx={{color: '#fff'}}>RetailPriceMn</TableCell>
-        <TableCell sx={{color: '#fff'}}>ColorMn</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {productsMn.map((product) => (
-        <TableRow key={product.ProductMnID}>
-          <TableCell>
-            <Avatar
-              src={product.ImagesPathMn}
-              alt={product.ProductNameMn}
-              sx={{ width: 50, height: 50 }}
-            />
-          </TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.ProductNameMn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.BrandMn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDMn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>₮{product.PriceMn}</TableCell>
-          <TableCell sx={{color: '#fff'}}>{product.ManufacturedCountryMn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.StockQuantity}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockMn}</TableCell>
-          <TableCell sx={{color: '#fff'}}>₮{product.RetailPriceMn}</TableCell>
-          <TableCell sx={{color: '#fff'}}>{product.ColorMn}</TableCell>
-          <TableCell sx={{ color: '#fff' }}>{new Date(product.CreatedAt.Time).toLocaleString()}</TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
+        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
+        <TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#fff' }}>Image</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Manufactured Country Mn</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>RetailPriceMn</TableCell>
+                <TableCell sx={{ color: '#fff' }}>ColorMn</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {productsMn.map((product) => (
+                <TableRow key={product.ProductMnID}>
+                  <TableCell>
+                    <Avatar
+                      src={product.ImagesPathMn}
+                      alt={product.ProductNameMn}
+                      sx={{ width: 50, height: 50 }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ProductNameMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.BrandMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.PriceMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.StockQuantity}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ColorMn}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{new Date(product.CreatedAt.Time).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant='contained'
+                      color="primary"
+                      sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
+                      onClick={() => handleUpdateClickMn(product)}>
+                      Update
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
 
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
@@ -480,6 +559,91 @@ const fetchProducts = async () => {
           onClose={() => setSnackbarOpen(false)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
+          <MuiAlert severity={snackbarSeverity}>{snackbarMessage}</MuiAlert>
+        </Snackbar>
+
+
+        {/* Update Modal En*/}
+        <Dialog open={updateModalEnOpen} onClose={() => setUpdateModalEnOpen(false)}>
+          <DialogTitle>Update English Product</DialogTitle>
+          <DialogContent>
+            {editingProductEn && (
+              <>
+                <Box display="flex" justifyContent="center">
+                  <Avatar src={editingProductEn.ImagesPathEn} sx={{ width: 80, height: 80, mb: 2 }} />
+                </Box>
+
+                {/* Upload New Image */}
+                <Button variant="contained" component="label" sx={{ mb: 2 }}>
+                  Upload Image
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, "en")}
+                  />
+                </Button>
+
+                <TextField fullWidth label="Product Name" value={editingProductEn.ProductNameEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, ProductNameEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Brand" value={editingProductEn.BrandEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, BrandEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Price" value={editingProductEn.PriceEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, PriceEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Stock Quantity" type="number" value={editingProductEn.StockQuantity} onChange={(e) => setEditingProductEn({ ...editingProductEn, StockQuantity: Number(e.target.value) })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Retail Price" value={editingProductEn.RetailPriceEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, RetailPriceEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Warehouse Stock" type="number" value={editingProductEn.WarehouseStockEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, WarehouseStockEn: Number(e.target.value) })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Material" value={editingProductEn.MaterialEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, MaterialEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Color" value={editingProductEn.ColorEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, ColorEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Size" value={editingProductEn.SizeEn} onChange={(e) => setEditingProductEn({ ...editingProductEn, SizeEn: e.target.value })} sx={{ mb: 2 }} />
+              </>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setUpdateModalEnOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateProduct} variant="contained">Update</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Update Modal Mn */}
+        <Dialog open={updateModalMnOpen} onClose={() => setUpdateModalMnOpen(false)}>
+          <DialogTitle>Update Mongolian Product</DialogTitle>
+          <DialogContent>
+            {editingProductMn && (
+              <>
+                {/* Product Image */}
+                <Box display="flex" justifyContent="center">
+                  <Avatar src={editingProductMn.ImagesPathMn} sx={{ width: 80, height: 80, mb: 2 }} />
+                </Box>
+                {/* Upload New Image */}
+                <Button variant="contained" component="label" sx={{ mb: 2 }}>
+                  Upload Image
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, "mn")}
+                  />
+                </Button>
+                <TextField fullWidth label="Product Name" value={editingProductMn.ProductNameMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, ProductNameMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Brand" value={editingProductMn.BrandMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, BrandMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Price" value={editingProductMn.PriceMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, PriceMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Stock Quantity" type="number" value={editingProductMn.StockQuantity} onChange={(e) => setEditingProductMn({ ...editingProductMn, StockQuantity: Number(e.target.value) })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Retail Price" value={editingProductMn.RetailPriceMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, RetailPriceMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Warehouse Stock" type="number" value={editingProductMn.WarehouseStockMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, WarehouseStockMn: Number(e.target.value) })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Material" value={editingProductMn.MaterialMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, MaterialMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Color" value={editingProductMn.ColorMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, ColorMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Size" value={editingProductMn.SizeMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, SizeMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Usage" value={editingProductMn.UsageMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, UsageMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Instructions" value={editingProductMn.InstructionsMn} onChange={(e) => setEditingProductMn({ ...editingProductMn, InstructionsMn: e.target.value })} sx={{ mb: 2 }} />
+              </>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setUpdateModalMnOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateProduct} variant="contained">Update</Button>
+          </DialogActions>
+        </Dialog>
+
+
+        <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)}>
           <MuiAlert severity={snackbarSeverity}>{snackbarMessage}</MuiAlert>
         </Snackbar>
       </Box>
