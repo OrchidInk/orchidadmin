@@ -195,6 +195,12 @@ const CategoryManagement = () => {
                     <TableCell sx={{ color: '#ffffff' }}>{category.categoryNameMn}</TableCell>
                     <TableCell>
                       <Button
+                        variant='contained'
+                        color='primary'
+                      >
+                        Update
+                      </Button>
+                      <Button
                         variant="contained"
                         color="error"
                         onClick={() => {
