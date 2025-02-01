@@ -352,114 +352,147 @@ const Product = () => {
         </Button>
 
         {/* Display fetched products (Optional) */}
-        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
-        <TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ color: '#fff' }}>Image</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Manufactured Country En</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
-                <TableCell sx={{ color: '#fff' }}>RetailPriceEn</TableCell>
-                <TableCell sx={{ color: '#fff' }}>ColorEn</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {productsEn.map((product) => (
-                <TableRow key={product.ProductEnID}>
-                  <TableCell>
-                    <Avatar
-                      src={product.ImagesPathEn}
-                      alt={product.ProductNameEn}
-                      sx={{ width: 50, height: 50 }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.ProductNameEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.BrandEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>₮{product.PriceEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.StockQuantity}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.ColorEn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{new Date(product.CreatedAt.Time).toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
-                      onClick={() => handleUpdateClickEn(product)}
-                    >
-                      Update
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+{/* English Products List */}
+<Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
+<TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell sx={{ color: '#fff' }}>Image</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Manufactured Country</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
+        <TableCell sx={{color: '#fff'}}>Material</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Color</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Action</TableCell>
+      </TableRow>
+    </TableHead>
+<TableBody>
+  {(productsEn ?? []).map((product) => (
+    <TableRow key={product.ProductEnID || Math.random()}>
+      <TableCell>
+        <Avatar
+          src={product.ImagesPathEn || "/placeholder.jpg"}
+          alt={product.ProductNameEn || "No Image"}
+          sx={{ width: 50, height: 50 }}
+        />
+      </TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.ProductNameEn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.BrandEn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDEn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>₮{product.PriceEn || '0.00'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryEn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.StockQuantity ?? 0}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockEn ?? 0}</TableCell>
+<TableCell sx={{ color: '#fff' }}>
+  {typeof product.MaterialEn === 'string' ? product.MaterialEn : 'N/A'}
+</TableCell>
 
-        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
-        <TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ color: '#fff' }}>Image</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Manufactured Country Mn</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
-                <TableCell sx={{ color: '#fff' }}>RetailPriceMn</TableCell>
-                <TableCell sx={{ color: '#fff' }}>ColorMn</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {productsMn.map((product) => (
-                <TableRow key={product.ProductMnID}>
-                  <TableCell>
-                    <Avatar
-                      src={product.ImagesPathMn}
-                      alt={product.ProductNameMn}
-                      sx={{ width: 50, height: 50 }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.ProductNameMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.BrandMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>₮{product.PriceMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.StockQuantity}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{product.ColorMn}</TableCell>
-                  <TableCell sx={{ color: '#fff' }}>{new Date(product.CreatedAt.Time).toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant='contained'
-                      color="primary"
-                      sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
-                      onClick={() => handleUpdateClickMn(product)}>
-                      Update
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceEn || '0.00'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.ColorEn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>
+        {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
+      </TableCell>
+      <TableCell>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
+          onClick={() => handleUpdateClickEn(product)}
+        >
+          Update
+        </Button>
+        <Button
+          variant='contained'
+          sx={{ background: '#ff3333', color: '#fff'}}
+        >
+          Delete
+        </Button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
+  </Table>
+</TableContainer>
+
+
+{/* Mongolian Products List */}
+<Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
+<TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell sx={{ color: '#fff' }}>Image</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Manufactured Country</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
+        <TableCell sx={{color: '#fff'}}>Material</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Color</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
+        <TableCell sx={{ color: '#fff' }}>Action</TableCell>
+      </TableRow>
+    </TableHead>
+<TableBody>
+  {(productsMn ?? []).map((product) => (
+    <TableRow key={product.ProductMnID || Math.random()}>
+      <TableCell>
+        <Avatar
+          src={product.ImagesPathMn || "/placeholder.jpg"}
+          alt={product.ProductNameMn || "No Image"}
+          sx={{ width: 50, height: 50 }}
+        />
+      </TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.ProductNameMn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.BrandMn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDMn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>₮{product.PriceMn || '0.00'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryMn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.StockQuantity ?? 0}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockMn ?? 0}</TableCell>
+
+<TableCell sx={{ color: '#fff' }}>
+  {typeof product.MaterialMn === 'string' ? product.MaterialMn : 'N/A'}
+</TableCell>
+      <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceMn || '0.00'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>{product.ColorMn || 'N/A'}</TableCell>
+      <TableCell sx={{ color: '#fff' }}>
+        {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
+      </TableCell>
+      <TableCell>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
+          onClick={() => handleUpdateClickMn(product)}
+        >
+          Update
+        </Button>
+        <Button
+          variant='contained'
+          sx={{background: '#ff3333', color: '#fff'}}
+          >
+          DELETE
+        </Button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
+  </Table>
+</TableContainer>
+
 
 
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
