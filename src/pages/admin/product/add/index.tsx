@@ -336,6 +336,34 @@ const Product = () => {
     }
   };
 
+  const handleDeleteClickEn = async (product: ProductEn) => {
+    try {
+      await api.delete(`/product/deleteEn/${product.ProductEnID}`);
+      setSnackbarMessage('Product deleted successfully.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      fetchProducts(); // Refresh list after deletion
+    } catch {
+      setSnackbarMessage('Failed to delete product. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleDeleteClickMn = async (product: ProductMn) => {
+    try {
+      await api.delete(`/product/deleteMn/${product.ProductMnID}`);
+      setSnackbarMessage('Product deleted successfully.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      fetchProducts(); // Refresh list after deletion
+    } catch {
+      setSnackbarMessage('Failed to delete product. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  }
+
   return (
     <>
       <Header />
@@ -369,7 +397,7 @@ const Product = () => {
         <TableCell sx={{color: '#fff'}}>Material</TableCell>
         <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
         <TableCell sx={{ color: '#fff' }}>Color</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
         <TableCell sx={{ color: '#fff' }}>Action</TableCell>
       </TableRow>
     </TableHead>
@@ -403,14 +431,15 @@ const Product = () => {
         <Button
           variant="contained"
           color="primary"
-          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
+          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1, mb: 1 }}
           onClick={() => handleUpdateClickEn(product)}
         >
           Update
         </Button>
         <Button
           variant='contained'
-          sx={{ background: '#ff3333', color: '#fff'}}
+          sx={{ background: '#ff3333', color: '#fff', mr: 1, mt: 1}}
+          onClick={()=>handleDeleteClickEn(product)}
         >
           Delete
         </Button>
@@ -474,15 +503,17 @@ const Product = () => {
         <Button
           variant="contained"
           color="primary"
-          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d' }}
+          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1, mb: 1 }}
           onClick={() => handleUpdateClickMn(product)}
         >
           Update
         </Button>
         <Button
           variant='contained'
-          sx={{background: '#ff3333', color: '#fff'}}
+          sx={{background: '#ff3333', color: '#fff', mt: 1, mr:1}}
+          onClick={()=> handleDeleteClickMn(product)}
           >
+          
           DELETE
         </Button>
       </TableCell>
@@ -493,8 +524,10 @@ const Product = () => {
   </Table>
 </TableContainer>
 
+{/* Delete Modal */}
 
 
+      {/* Add Product Modal */}
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
           <DialogTitle>Add Product</DialogTitle>
           <DialogContent>

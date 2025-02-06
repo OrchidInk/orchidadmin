@@ -416,17 +416,17 @@ const Header = () => {
             >
               Хүргэлт
             </MenuItem>
-            {/* <MenuItem
-              onClick={() => handleNavigation(adminDeliveryList, setDeliveryAnchorEl, 'Хүргэлт харах')}
-              sx={{
-                color: activeItem === 'Хүргэлт харах' ? '#00ffba' : 'white',
-                '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Хүргэлт харах' ? 'bold' : 'normal',
-              }}
-            >
-              Хүргэлт харах
-            </MenuItem> */}
-          </MenuList>
+            <MenuItem
+      onClick={() => handleNavigation('/admin/order', setDeliveryAnchorEl, 'Захиалга')}
+      sx={{
+        color: activeItem === 'Захиалга' ? '#00ffba' : 'white',
+        '&:hover': { bgcolor: '#2d2d2d' },
+        fontWeight: activeItem === 'Захиалга' ? 'bold' : 'normal',
+      }}
+    >
+      Захиалга
+    </MenuItem>
+  </MenuList>
         </Menu>
       </Toolbar>
     </AppBar>

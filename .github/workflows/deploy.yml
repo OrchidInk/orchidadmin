@@ -10,35 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the repository
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Step 2: Set up SSH
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # Step 2: Set up SSH
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    # Step 3: Deploy to the server
-    - name: Deploy and Restart Next.js
-      run: |
-        ssh -o StrictHostKeyChecking=no cloudmn@103.50.205.86 << 'EOF'
-          # Navigate to your project directory
-          cd /home/cloudmn/orchidadmin
+      # Step 3: Deploy to the server
+      - name: Deploy and Restart Next.js
+        run: |
+          ssh -o StrictHostKeyChecking=no cloudmn@103.50.205.86 << 'EOF'
+            # Navigate to your project directory
+            cd /home/cloudmn/orchidinkFrontEnd
 
-          # Pull the latest changes
-          git pull origin master
+            # Pull the latest changes
+            git pull origin master
 
-          # Install dependencies
-          sudo npm install
+            # Install dependencies
+            sudo npm install
 
-          # Build the Next.js project
-          sudo npm run build
+            # Build the Next.js project
+            sudo npm run build
 
-          # Restart the app with PM2
-          pm2 restart orchid-admin || pm2 start npm --name "orchid-admin" -- start
+            # Set the PORT environment variable to 8888
+            export PORT=8888
 
-          # Optional: Save PM2 state
-          pm2 save
-        EOF
+            # Restart the app with PM2 (if already running, it will restart; otherwise, it will start)
+            pm2 restart orchid-frontend || pm2 start npm --name "orchid-frontend" -- start
+
+            # Optional: Save PM2 process list
+            pm2 save
+          EOF
