@@ -187,14 +187,25 @@ const Header = () => {
               Menu нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation(adminSubMenuAdd, setTypeAnchorEl, 'SubMenu нэмэх')}
+              onClick={() => handleNavigation(adminSubMenuAdd, setTypeAnchorEl, 'Ангилал нэмэх')}
               sx={{
                 color: activeItem === 'SubMenu нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
                 fontWeight: activeItem === 'SubMenu нэмэх' ? 'bold' : 'normal',
               }}
             >
-              SubMenu нэмэх
+              Ангилал нэмэх
+            </MenuItem>
+            <MenuItem
+              onClick={()=> handleNavigation("/admin/sMenu/add", setTypeAnchorEl, 'Дэд ангилал нэмэх')}
+              sx={{
+                color: activeItem === 'SubMenu нэмэх' ? '#00ffba' : 'white',
+                '&:hover': { bgcolor: '#2d2d2d' },
+                fontWeight: activeItem === 'SubMenu нэмэх' ? 'bold' : 'normal',
+              }}
+            >
+              Дэд ангилал нэмэх
+            
             </MenuItem>
           </MenuList>
         </Menu>
@@ -416,17 +427,17 @@ const Header = () => {
             >
               Хүргэлт
             </MenuItem>
-            {/* <MenuItem
-              onClick={() => handleNavigation(adminDeliveryList, setDeliveryAnchorEl, 'Хүргэлт харах')}
-              sx={{
-                color: activeItem === 'Хүргэлт харах' ? '#00ffba' : 'white',
-                '&:hover': { bgcolor: '#2d2d2d' },
-                fontWeight: activeItem === 'Хүргэлт харах' ? 'bold' : 'normal',
-              }}
-            >
-              Хүргэлт харах
-            </MenuItem> */}
-          </MenuList>
+            <MenuItem
+      onClick={() => handleNavigation('/admin/order', setDeliveryAnchorEl, 'Захиалга')}
+      sx={{
+        color: activeItem === 'Захиалга' ? '#00ffba' : 'white',
+        '&:hover': { bgcolor: '#2d2d2d' },
+        fontWeight: activeItem === 'Захиалга' ? 'bold' : 'normal',
+      }}
+    >
+      Захиалга
+    </MenuItem>
+  </MenuList>
         </Menu>
       </Toolbar>
     </AppBar>
