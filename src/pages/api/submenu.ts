@@ -101,6 +101,7 @@ export const addSubCategoryMn = async (subCategoryNameMn: string, categoryMnId: 
     }
 };
 
+
 // Fetch SubCategories in English
 export const fetchSubCategoriesEn = async () => {
     try {

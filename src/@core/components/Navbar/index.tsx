@@ -187,14 +187,25 @@ const Header = () => {
               Menu нэмэх
             </MenuItem>
             <MenuItem
-              onClick={() => handleNavigation(adminSubMenuAdd, setTypeAnchorEl, 'SubMenu нэмэх')}
+              onClick={() => handleNavigation(adminSubMenuAdd, setTypeAnchorEl, 'Ангилал нэмэх')}
               sx={{
                 color: activeItem === 'SubMenu нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
                 fontWeight: activeItem === 'SubMenu нэмэх' ? 'bold' : 'normal',
               }}
             >
-              SubMenu нэмэх
+              Ангилал нэмэх
+            </MenuItem>
+            <MenuItem
+              onClick={()=> handleNavigation("/admin/sMenu/add", setTypeAnchorEl, 'Дэд ангилал нэмэх')}
+              sx={{
+                color: activeItem === 'SubMenu нэмэх' ? '#00ffba' : 'white',
+                '&:hover': { bgcolor: '#2d2d2d' },
+                fontWeight: activeItem === 'SubMenu нэмэх' ? 'bold' : 'normal',
+              }}
+            >
+              Дэд ангилал нэмэх
+            
             </MenuItem>
           </MenuList>
         </Menu>
