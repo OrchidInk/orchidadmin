@@ -57,40 +57,92 @@ export const fetchSCategoriesMn = async () => {
     }
 }
 
-export const AddSCategoryMn = async (sCategoryName: string, subCategoryIDMn: number) => {
+export const AddSCategoryMn = async (sCategoryNameMn: string, subCategoryIDMn: number) => {
     try {
         const token = getToken();
         if (!token) {
             throw new Error('Token not found');
         }
         await axios.post(`${BASE_URL}/createMn`, {
-            sCategoryName, subCategoryIDMn
+            sCategoryNameMn, subCategoryIDMn
         }, {
             headers: {Authorization: `Bearer ${token}`}
         })
-    } catch(error) {
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 409) {
+        console.error("Conflict error: ", error.response.data);
+        alert("A category with these details already exists.");
+      } else {
+        handleUnauthorized(error);
+      }
+    } else {
+      throw error;
+    }
+  }
+};
+
+export const addSCategoryEn = async (sCategoryNameEn: string, subCategoryIDEn: number) => {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    await axios.post(
+      `${BASE_URL}/createEn`,
+      { sCategoryNameEn, subCategoryIDEn },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 409) {
+        console.error("Conflict error: ", error.response.data);
+        alert("A category with these details already exists.");
+      } else {
+        handleUnauthorized(error);
+      }
+    } else {
+      throw error;
+    }
+  }
+};
+
+
+export const fetchCategoriesMns = async () => {
+    try {
+        const token = getToken();
+        if (!token) {
+            throw new Error('Token not found.');
+        }
+        const response = await axios.get(`${BASE_URLs}/listMn`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
         if (axios.isAxiosError(error)) {
             handleUnauthorized(error);
         } else {
             throw error;
         }
     }
-}
+};
 
-export const addSCategoryEn = async(sCategoryNameEn: string, subCategoryIDEn: number) => {
+// Fetch Categories in English
+export const fetchCategoriesEns = async () => {
     try {
-        const token = getToken()
+        const token = getToken();
         if (!token) {
-            throw new Error('Token not found')
+            throw new Error('Token not found.');
         }
-        await axios.post(`${BASE_URL}/createEn`, {
-            sCategoryNameEn, subCategoryIDEn
-        }, {headers: {Authorization: `Bearer ${token}`}})
-    } catch(error) {
+        const response = await axios.get(`${BASE_URLs}/listEn`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
         if (axios.isAxiosError(error)) {
-            handleUnauthorized(error)
+            handleUnauthorized(error);
         } else {
             throw error;
         }
     }
-}
+};
