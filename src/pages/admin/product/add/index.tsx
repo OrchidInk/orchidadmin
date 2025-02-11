@@ -37,7 +37,7 @@ interface ProductEn {
   MaterialEn: unknown;
   ProductEnID: number;
   ProductNameEn: string;
-  SubCategoryIDEn: number;
+  SCategoryIDEn: number;
   PriceEn: string;
   StockQuantity: number;
   ImagesPathEn: string;
@@ -58,7 +58,7 @@ interface ProductMn {
   MaterialMn: unknown;
   ProductMnID: number;
   ProductNameMn: string;
-  SubCategoryIDMn: number;
+  SCategoryIDMn: number;
   PriceMn: string;
   StockQuantity: number;
   ImagesPathMn: string;
@@ -75,7 +75,7 @@ interface ProductMn {
 
 const Product = () => {
   const [productNameEn, setProductNameEn] = useState('');
-  const [subCategoryEnID, setSubCategoryEnID] = useState<number | null>(null);
+  const [sCategoryEnId, setSCategoryEnId] = useState<number | null>(null);
   const [priceEn, setPriceEn] = useState('');
   const [stockQuantity, setStockQuantity] = useState<number | null>(null);
   const [imagesPathEn, setImagesPathEn] = useState<string>('');
@@ -98,7 +98,7 @@ const Product = () => {
   const [warehouseStockEn, setWarehouseStockEn] = useState<number | null>(null);
 
   const [productNameMn, setProductNameMn] = useState('');
-  const [subCategoryMnID, setSubCategoryMnID] = useState<number | null>(null);
+  const [sCategoryMnId, setSCategoryMnId] = useState<number | null>(null);
   const [priceMn, setPriceMn] = useState('');
   const [imagesPathMn, setImagesPathMn] = useState<string>('');
   const [descriptionMn, setDescriptionMn] = useState<string>('');
@@ -138,19 +138,19 @@ const Product = () => {
   const fetchCategories = async () => {
     try {
       const [responseEn, responseMn] = await Promise.all([
-        api.get('/subCategory/listEn'),
-        api.get('/subCategory/listMn'),
+        api.get('/sCategory/listEn'),
+        api.get('/sCategory/listMn'),
       ]);
       setCategoriesEn(
-        responseEn.data.map((cat: { SubCategoryIDEn: number; SubCategoryNameEn: string }) => ({
-          id: cat.SubCategoryIDEn,
-          name: cat.SubCategoryNameEn,
+        responseEn.data.map((cat: { SCategoryIdEn: number; SCategoryNameEn: string }) => ({
+          id: cat.SCategoryIdEn,
+          name: cat.SCategoryNameEn,
         }))
       );
       setCategoriesMn(
-        responseMn.data.map((cat: { SubCategoryIDMn: number; SubCategoryNameMn: string }) => ({
-          id: cat.SubCategoryIDMn,
-          name: cat.SubCategoryNameMn,
+        responseMn.data.map((cat: { SCategoryIdMn: number; SCategoryNameMn: string }) => ({
+          id: cat.SCategoryIdMn,
+          name: cat.SCategoryNameMn,
         }))
       );
     } catch {
@@ -188,7 +188,7 @@ const Product = () => {
 
     const productDataEn = {
       ProductNameEn: productNameEn,
-      SubCategoryEnID: subCategoryEnID,
+      SCategoryEnID: sCategoryEnId,
       PriceEn: parseFloat(priceEn).toFixed(2),
       StockQuantity: stockQuantity,
       ImagesPathEn: imagesPathEn,
@@ -212,7 +212,7 @@ const Product = () => {
 
     const productDataMn = {
       ProductNameMn: productNameMn,
-      SubCategoryMnID: subCategoryMnID,
+      SCategoryMnID: sCategoryMnId,
       PriceMn: parseFloat(priceMn).toFixed(2),
       StockQuantity: stockQuantity,
       ImagesPathMn: imagesPathMn,
@@ -254,12 +254,12 @@ const Product = () => {
   // Reset form
   const resetForm = () => {
     setProductNameEn('');
-    setSubCategoryEnID(null);
+    setSCategoryEnId(null);
     setPriceEn('');
     setStockQuantity(null);
     setImagesPathEn('');
     setProductNameMn('');
-    setSubCategoryMnID(null);
+    setSCategoryMnId(null);
     setPriceMn('');
     setImagesPathMn('');
   };
@@ -380,154 +380,154 @@ const Product = () => {
         </Button>
 
         {/* Display fetched products (Optional) */}
-{/* English Products List */}
-<Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
-<TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell sx={{ color: '#fff' }}>Image</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Manufactured Country</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
-        <TableCell sx={{color: '#fff'}}>Material</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Color</TableCell>
+        {/* English Products List */}
+        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
+        <TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#fff' }}>Image</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Manufactured Country</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Material</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Color</TableCell>
                 <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Action</TableCell>
-      </TableRow>
-    </TableHead>
-<TableBody>
-  {(productsEn ?? []).map((product) => (
-    <TableRow key={product.ProductEnID || Math.random()}>
-      <TableCell>
-        <Avatar
-          src={product.ImagesPathEn || "/placeholder.jpg"}
-          alt={product.ProductNameEn || "No Image"}
-          sx={{ width: 50, height: 50 }}
-        />
-      </TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.ProductNameEn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.BrandEn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDEn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>₮{product.PriceEn || '0.00'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryEn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.StockQuantity ?? 0}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockEn ?? 0}</TableCell>
-<TableCell sx={{ color: '#fff' }}>
-  {typeof product.MaterialEn === 'string' ? product.MaterialEn : 'N/A'}
-</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(productsEn ?? []).map((product) => (
+                <TableRow key={product.ProductEnID || Math.random()}>
+                  <TableCell>
+                    <Avatar
+                      src={product.ImagesPathEn || "/placeholder.jpg"}
+                      alt={product.ProductNameEn || "No Image"}
+                      sx={{ width: 50, height: 50 }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ProductNameEn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.BrandEn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.SCategoryIDEn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.PriceEn || '0.00'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryEn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.StockQuantity ?? 0}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockEn ?? 0}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>
+                    {typeof product.MaterialEn === 'string' ? product.MaterialEn : 'N/A'}
+                  </TableCell>
 
-      <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceEn || '0.00'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.ColorEn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>
-        {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
-      </TableCell>
-      <TableCell>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1, mb: 1 }}
-          onClick={() => handleUpdateClickEn(product)}
-        >
-          Update
-        </Button>
-        <Button
-          variant='contained'
-          sx={{ background: '#ff3333', color: '#fff', mr: 1, mt: 1}}
-          onClick={()=>handleDeleteClickEn(product)}
-        >
-          Delete
-        </Button>
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceEn || '0.00'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ColorEn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>
+                    {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1, mb: 1 }}
+                      onClick={() => handleUpdateClickEn(product)}
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      variant='contained'
+                      sx={{ background: '#ff3333', color: '#fff', mr: 1, mt: 1 }}
+                      onClick={() => handleDeleteClickEn(product)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
 
-  </Table>
-</TableContainer>
-
-
-{/* Mongolian Products List */}
-<Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
-<TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell sx={{ color: '#fff' }}>Image</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Manufactured Country</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
-        <TableCell sx={{color: '#fff'}}>Material</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Color</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
-        <TableCell sx={{ color: '#fff' }}>Action</TableCell>
-      </TableRow>
-    </TableHead>
-<TableBody>
-  {(productsMn ?? []).map((product) => (
-    <TableRow key={product.ProductMnID || Math.random()}>
-      <TableCell>
-        <Avatar
-          src={product.ImagesPathMn || "/placeholder.jpg"}
-          alt={product.ProductNameMn || "No Image"}
-          sx={{ width: 50, height: 50 }}
-        />
-      </TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.ProductNameMn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.BrandMn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.SubCategoryIDMn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>₮{product.PriceMn || '0.00'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryMn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.StockQuantity ?? 0}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockMn ?? 0}</TableCell>
-
-<TableCell sx={{ color: '#fff' }}>
-  {typeof product.MaterialMn === 'string' ? product.MaterialMn : 'N/A'}
-</TableCell>
-      <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceMn || '0.00'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>{product.ColorMn || 'N/A'}</TableCell>
-      <TableCell sx={{ color: '#fff' }}>
-        {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
-      </TableCell>
-      <TableCell>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1, mb: 1 }}
-          onClick={() => handleUpdateClickMn(product)}
-        >
-          Update
-        </Button>
-        <Button
-          variant='contained'
-          sx={{background: '#ff3333', color: '#fff', mt: 1, mr:1}}
-          onClick={()=> handleDeleteClickMn(product)}
-          >
-          
-          DELETE
-        </Button>
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
-
-  </Table>
-</TableContainer>
-
-{/* Delete Modal */}
+          </Table>
+        </TableContainer>
 
 
-      {/* Add Product Modal */}
+        {/* Mongolian Products List */}
+        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
+        <TableContainer component={Paper} sx={{ backgroundColor: '#121212', color: '#fff' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: '#fff' }}>Image</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Product Name</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Brand</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Category ID</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Price (₮)</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Manufactured Country</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Warehouse Stock</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Material</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Retail Price</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Color</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Created At</TableCell>
+                <TableCell sx={{ color: '#fff' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(productsMn ?? []).map((product) => (
+                <TableRow key={product.ProductMnID || Math.random()}>
+                  <TableCell>
+                    <Avatar
+                      src={product.ImagesPathMn || "/placeholder.jpg"}
+                      alt={product.ProductNameMn || "No Image"}
+                      sx={{ width: 50, height: 50 }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ProductNameMn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.BrandMn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.SCategoryIDMn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.PriceMn || '0.00'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ManufacturedCountryMn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.StockQuantity ?? 0}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.WarehouseStockMn ?? 0}</TableCell>
+
+                  <TableCell sx={{ color: '#fff' }}>
+                    {typeof product.MaterialMn === 'string' ? product.MaterialMn : 'N/A'}
+                  </TableCell>
+                  <TableCell sx={{ color: '#fff' }}>₮{product.RetailPriceMn || '0.00'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>{product.ColorMn || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>
+                    {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1, mb: 1 }}
+                      onClick={() => handleUpdateClickMn(product)}
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      variant='contained'
+                      sx={{ background: '#ff3333', color: '#fff', mt: 1, mr: 1 }}
+                      onClick={() => handleDeleteClickMn(product)}
+                    >
+
+                      DELETE
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+
+          </Table>
+        </TableContainer>
+
+        {/* Delete Modal */}
+
+
+        {/* Add Product Modal */}
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)}>
           <DialogTitle>Add Product</DialogTitle>
           <DialogContent>
@@ -539,8 +539,8 @@ const Product = () => {
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel>SubCategory</InputLabel>
                   <Select
-                    value={subCategoryEnID || ''}
-                    onChange={(e) => setSubCategoryEnID(Number(e.target.value))}
+                    value={sCategoryEnId || ''}
+                    onChange={(e) => setSCategoryEnId(Number(e.target.value))}
                   >
                     {categoriesEn.map((category) => (
                       <MenuItem key={category.id} value={category.id}>
@@ -578,8 +578,8 @@ const Product = () => {
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel>SubCategory</InputLabel>
                   <Select
-                    value={subCategoryMnID || ''}
-                    onChange={(e) => setSubCategoryMnID(Number(e.target.value))}
+                    value={sCategoryMnId || ''}
+                    onChange={(e) => setSCategoryMnId(Number(e.target.value))}
                   >
                     {categoriesMn.map((category) => (
                       <MenuItem key={category.id} value={category.id}>
