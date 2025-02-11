@@ -71,7 +71,7 @@ const CategoryManagement = () => {
 
   useEffect(() => {
     fetchCategories();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -162,12 +162,12 @@ const CategoryManagement = () => {
       handleSnackbar('❌ Failed to delete category. Please try again.', 'error');
     }
   };
-const handleUpdateClickMn = (category: CategoryMn) => { // Added missing handler
+  const handleUpdateClickMn = (category: CategoryMn) => { // Added missing handler
     setSelectedCategoryId(category.categoryMnId);
     setNewCategoryMn(category.categoryNameMn);
     setUpdateModalOpenMn(true);
   };
- const handleDeleteClick = (categoryId: number, type: 'en' | 'mn') => {
+  const handleDeleteClick = (categoryId: number, type: 'en' | 'mn') => {
     setSelectedCategoryId(categoryId);
     setDeleteCategoryType(type);
     setDeleteModalOpen(true);
@@ -258,7 +258,7 @@ const handleUpdateClickMn = (category: CategoryMn) => { // Added missing handler
                     <Button
                       variant='contained'
                       sx={{ background: "#ff0000", color: "#fff", mr: 1 }}
-                      onClick={()=>handleDeleteClick(category.categoryEnId, 'en')}
+                      onClick={() => handleDeleteClick(category.categoryEnId, 'en')}
                     >
                       Delete
                     </Button>
@@ -289,14 +289,14 @@ const handleUpdateClickMn = (category: CategoryMn) => { // Added missing handler
                     <Button
                       variant='contained'
                       sx={{ background: "#ffcc00", color: "#fff", mr: 1 }}
-                      onClick={()=>handleUpdateClickMn(category)}
+                      onClick={() => handleUpdateClickMn(category)}
                     >
                       Update
                     </Button>
                     <Button
                       variant='contained'
                       sx={{ background: "#ff0000", color: "#fff", mr: 1 }}
-                      onClick={()=>handleDeleteClick(category.categoryMnId, 'mn')}
+                      onClick={() => handleDeleteClick(category.categoryMnId, 'mn')}
                     >
                       Delete
                     </Button>
@@ -308,7 +308,7 @@ const handleUpdateClickMn = (category: CategoryMn) => { // Added missing handler
         </Paper>
       </Box>
 
-   <Dialog open={updateModelOpenMn} onClose={() => setUpdateModalOpenMn(false)}>
+      <Dialog open={updateModelOpenMn} onClose={() => setUpdateModalOpenMn(false)}>
         <DialogTitle>Update Category (MN)</DialogTitle>
         <DialogContent>
           <TextField
