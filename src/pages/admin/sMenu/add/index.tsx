@@ -10,22 +10,31 @@ import {
   TableBody,
   TextField,
   Typography,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import MuiAlert from '@mui/material/Alert';
 import {
   addSCategoryEn,
   AddSCategoryMn,
+  deleteSCategoryEn,
+  deleteSCategoryMn,
   fetchCategoriesEns,
   fetchCategoriesMns,
   fetchSCategoriesEn,
-  fetchSCategoriesMn
+  fetchSCategoriesMn,
+  updateSCategoryEn,
+  updateSCategoryMn
 } from '@/pages/api/smenu';
+import { AxiosError } from 'axios';
 
-// Update interfaces to match the API response keys exactly.
-// Your sample API response for a subCategory (for English) is:
-// { SubCategoryIDEn: 1, SubCategoryNameEn: "A4", CategoryEnID: 1 }
+// These interfaces must match your API response exactly.
 interface SubCategoryEn {
   SubCategoryIDEn: number;
   SubCategoryNameEn: string;
@@ -37,56 +46,62 @@ interface SubCategoryMn {
   CategoryMnID: number;
 }
 
-// sCategory interfaces – these are the records you want to render in your sCategory table.
+// sCategory interfaces – these are the records you want to display.
 interface SCategoryEn {
-  sCategoryIdEn: number;
-  sCategoryNameEn: string;
-  subCategoryIDEn: number;
+  SCategoryIdEn: number;
+  SCategoryNameEn: string;
+  SubCategoryIDEn: number;
 }
 interface SCategoryMn {
-  sCategoryIdMn: number;
-  sCategoryName: string;
-  subCategoryIDMn: number;
+  SCategoryIdMn: number;
+  SCategoryNameMn: string;
+  SubCategoryIDMn: number;
 }
 
 const Index = () => {
-  // State for subcategories (to use in dropdowns for adding new sCategory records)
+  // State for subcategories (for dropdowns)
   const [enCategories, setEnCategories] = useState<SubCategoryEn[]>([]);
   const [mnCategories, setMnCategories] = useState<SubCategoryMn[]>([]);
 
-  // State for sCategories (records to display in the sCategory tables)
+  // State for sCategories (to display in tables)
   const [sCategoriesEn, setSCategoriesEn] = useState<SCategoryEn[]>([]);
   const [sCategoriesMn, setSCategoriesMn] = useState<SCategoryMn[]>([]);
 
-  // State for modal visibility and new sCategory inputs
+  // Modal state and new sCategory input fields
   const [addModalOpen, setAddModalOpen] = useState(false);
-  // English sCategory fields
+  const [updateModalOpenEn, setUpdateModalOpenEn] = useState(false);
+  const [updateModalOpenMn, setUpdateModalOpenMn] = useState(false);
+  const [selectedSCategoryEn, setSelectedSCategoryEn] = useState<SCategoryEn | null>(null)
+  const [selectedSCategoryMn, setSelectedSCategoryMn] = useState<SCategoryMn | null>(null)
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
   const [newSCategoryNameEn, setNewSCategoryNameEn] = useState<string>('');
   const [subCategoryIDEn, setSubCategoryIDEn] = useState<number>(0);
-  // Mongolian sCategory fields
   const [newSCategoryNameMn, setNewSCategoryNameMn] = useState<string>('');
   const [subCategoryIDMn, setSubCategoryIDMn] = useState<number>(0);
 
-  // Helper function to load all required data.
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteSCategoryId, setDeleteSCategoryId] = useState<number | null>(null)
+  const [deleteType, setDeleteType] = useState<'en' | 'mn' | null>(null)
+
+  // Helper function to load data from API endpoints.
   const loadCategories = async () => {
     try {
-      // Fetch subCategories (for dropdowns)
+      // Fetch subcategories (for dropdown options)
       const mnData: SubCategoryMn[] = await fetchCategoriesMns();
       const enData: SubCategoryEn[] = await fetchCategoriesEns();
-
       console.log("Fetched English SubCategories:", enData);
       console.log("Fetched Mongolian SubCategories:", mnData);
-
-      setMnCategories(mnData ?? []);
       setEnCategories(enData ?? []);
+      setMnCategories(mnData ?? []);
 
-      // Fetch sCategories (the data you want to render in your tables)
+      // Fetch sCategories (the records to render in the sCategory tables)
       const sCatEnData: SCategoryEn[] = await fetchSCategoriesEn();
       const sCatMnData: SCategoryMn[] = await fetchSCategoriesMn();
-
       console.log("Fetched sCategories (En):", sCatEnData);
       console.log("Fetched sCategories (Mn):", sCatMnData);
-
       setSCategoriesEn(sCatEnData ?? []);
       setSCategoriesMn(sCatMnData ?? []);
     } catch (error) {
@@ -98,9 +113,8 @@ const Index = () => {
     loadCategories();
   }, []);
 
-  // Called when the user clicks the "Add" button in the modal.
+  // When adding a new sCategory.
   const handleAdd = async () => {
-    // Validate that all fields are filled.
     if (!newSCategoryNameEn || !newSCategoryNameMn || subCategoryIDEn === 0 || subCategoryIDMn === 0) {
       alert("Please fill in all fields.");
       return;
@@ -110,9 +124,12 @@ const Index = () => {
         addSCategoryEn(newSCategoryNameEn, subCategoryIDEn),
         AddSCategoryMn(newSCategoryNameMn, subCategoryIDMn)
       ]);
-      // Refresh data.
       await loadCategories();
-      // Close modal and reset fields.
+
+      setSnackbarMessage('✅ Subcategory added successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
       setAddModalOpen(false);
       setNewSCategoryNameEn('');
       setSubCategoryIDEn(0);
@@ -122,6 +139,116 @@ const Index = () => {
       console.error("Error adding category:", error);
     }
   };
+
+  // Update sCategory
+  const handleUpdateClickMn = (sCategory: SCategoryMn) => {
+    setSelectedSCategoryMn(sCategory)
+    setUpdateModalOpenMn(true);
+  }
+
+  const handleUpdateSubmitMn = async () => {
+    if (!selectedSCategoryMn) return;
+
+    try {
+      await updateSCategoryMn(selectedSCategoryMn.SCategoryIdMn, selectedSCategoryMn.SCategoryNameMn)
+
+      setSnackbarMessage('✅ Subcategory updated successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+
+      setSCategoriesMn((prev) =>
+        prev.map((sub) =>
+          sub.SCategoryIdMn === selectedSCategoryMn.SCategoryIdMn
+            ? { ...sub, SCategoryNameMn: selectedSCategoryMn.SCategoryNameMn }
+            : sub
+        )
+      );
+
+      setUpdateModalOpenMn(false)
+
+    } catch (error) {
+      console.error('❌ Failed to update Mongolian scategory:', error);
+      let errorMessage = 'Failed to update scategory.';
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || 'Server error occurred!';
+      }
+      setSnackbarMessage(`❌ ${errorMessage}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  }
+
+  const handleUpdateClickEn = (sCategory: SCategoryEn) => {
+    setSelectedSCategoryEn(sCategory)
+    setUpdateModalOpenEn(true)
+  }
+
+  const handleUpdateSubmitEn = async () => {
+    if (!selectedSCategoryEn) return;
+    try {
+      await updateSCategoryEn(selectedSCategoryEn.SCategoryIdEn, selectedSCategoryEn.SCategoryNameEn)
+
+      setSnackbarMessage('✅ Subcategory updated successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+
+      setSCategoriesEn((prev) =>
+        prev.map((sub) =>
+          sub.SCategoryIdEn === selectedSCategoryEn.SCategoryIdEn
+            ? { ...sub, SCategoryNameEn: selectedSCategoryEn.SCategoryNameEn }
+            : sub
+        )
+      );
+
+      setUpdateModalOpenEn(false)
+    } catch (error) {
+      console.error('❌ Failed to update English scategory:', error);
+      let errorMessage = 'Failed to update scategory.';
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || 'Server error occurred!';
+      }
+      setSnackbarMessage(`❌ ${errorMessage}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  }
+
+  // Delete
+  const handleDeleteClick = (id: number, type: 'en' | 'mn') => {
+    setDeleteSCategoryId(id);
+    setDeleteType(type);
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (deleteSCategoryId === null || deleteType === null) return;
+
+    try {
+      if (deleteType === 'en') {
+        await deleteSCategoryEn(deleteSCategoryId)
+        setSCategoriesEn((prev) => prev.filter((sub) => sub.SCategoryIdEn !== deleteSCategoryId))
+      } else {
+        await deleteSCategoryMn(deleteSCategoryId)
+        setSCategoriesMn((prev) => prev.filter((cat) => cat.SCategoryIdMn !== deleteSCategoryId))
+      }
+
+      setSnackbarMessage('✅ Subcategory deleted successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      let errorMessage = 'Failed to delete subcategory.';
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || 'Server error occurred!';
+      }
+
+      setSnackbarMessage(`❌ ${errorMessage}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+    setDeleteDialogOpen(false)
+  }
 
   return (
     <Box sx={{ backgroundColor: '#0d0d0d', minHeight: '100vh', color: '#ffffff', p: 2 }}>
@@ -230,12 +357,25 @@ const Index = () => {
         </TableHead>
         <TableBody>
           {sCategoriesEn.map((cat) => (
-            <TableRow key={cat.sCategoryIdEn}>
-              <TableCell sx={{ color: '#ffffff' }}>{cat.sCategoryIdEn}</TableCell>
-              <TableCell sx={{ color: '#ffffff' }}>{cat.sCategoryNameEn}</TableCell>
-              <TableCell sx={{ color: '#ffffff' }}>{cat.subCategoryIDEn}</TableCell>
+            <TableRow key={cat.SCategoryIdEn}>
+              <TableCell sx={{ color: '#ffffff' }}>{cat.SCategoryIdEn}</TableCell>
+              <TableCell sx={{ color: '#ffffff' }}>{cat.SCategoryNameEn}</TableCell>
+              <TableCell sx={{ color: '#ffffff' }}>{cat.SubCategoryIDEn}</TableCell>
               <TableCell sx={{ color: '#ffffff' }}>
-                {/* Insert action buttons here if needed */}
+                <Button
+                  variant='contained'
+                  sx={{ background: "#00ffba", color: "#000", mr: 1 }}
+                  onClick={() => handleUpdateClickEn(cat)}
+                >
+                  Update
+                </Button>
+                <Button
+                  variant='contained'
+                  sx={{ background: '#ff0000', color: '#fff', mr: 1 }}
+                  onClick={() => handleDeleteClick(cat.SCategoryIdEn, 'en')}
+                >
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -257,17 +397,109 @@ const Index = () => {
         </TableHead>
         <TableBody>
           {sCategoriesMn.map((cat) => (
-            <TableRow key={cat.sCategoryIdMn}>
-              <TableCell sx={{ color: '#ffffff' }}>{cat.sCategoryIdMn}</TableCell>
-              <TableCell sx={{ color: '#ffffff' }}>{cat.sCategoryName}</TableCell>
-              <TableCell sx={{ color: '#ffffff' }}>{cat.subCategoryIDMn}</TableCell>
+            <TableRow key={cat.SCategoryIdMn}>
+              <TableCell sx={{ color: '#ffffff' }}>{cat.SCategoryIdMn}</TableCell>
+              <TableCell sx={{ color: '#ffffff' }}>{cat.SCategoryNameMn}</TableCell>
+              <TableCell sx={{ color: '#ffffff' }}>{cat.SubCategoryIDMn}</TableCell>
               <TableCell sx={{ color: '#ffffff' }}>
-                {/* Insert action buttons here if needed */}
+                <Button
+                  variant='contained'
+                  sx={{ background: "#00ffba", color: "#000", mr: 1 }}
+                  onClick={() => handleUpdateClickMn(cat)}
+                >
+                  Update
+                </Button>
+                <Button
+                  variant='contained'
+                  sx={{ background: '#ff0000', color: '#fff', mr: 1 }}
+                  onClick={() => handleDeleteClick(cat.SCategoryIdMn, 'mn')}
+                >
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Update */}
+      <Dialog open={updateModalOpenMn} onClose={() => setUpdateModalOpenMn(false)}>
+        <DialogTitle>Дэд ангилал шинэчлэх</DialogTitle>
+        <DialogContent>
+          {selectedSCategoryMn && (
+            <TextField
+              fullWidth
+              label="Дэд ангилал нэр(Монгол)"
+              value={selectedSCategoryMn.SCategoryNameMn}
+              onChange={(e) => {
+                setSelectedSCategoryMn({ ...selectedSCategoryMn, SCategoryNameMn: e.target.value })
+              }}
+              sx={{ mb: 2 }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUpdateModalOpenMn(false)}>Cancel</Button>
+          <Button onClick={handleUpdateSubmitMn} variant="contained" sx={{ background: '#ffcc00', color: '#000' }}>
+            Update
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={updateModalOpenEn} onClose={() => setUpdateModalOpenEn(false)}>
+        <DialogTitle>English Category Update</DialogTitle>
+        <DialogContent>
+          {selectedSCategoryEn && (
+            <TextField
+              fullWidth
+              label="English Category update"
+              value={selectedSCategoryEn.SCategoryNameEn}
+              onChange={(e) => {
+                setSelectedSCategoryEn({ ...selectedSCategoryEn, SCategoryNameEn: e.target.value })
+              }}
+              sx={{ mb: 2 }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUpdateModalOpenEn(false)}>Cancel</Button>
+          <Button onClick={handleUpdateSubmitEn} variant="contained" sx={{ background: '#00ffba', color: '#000' }}>
+            Update
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Delete */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Дэд ангилал устгах</DialogTitle>
+        <DialogContent>
+          Энэ дэд ангилалыг устгахдаа итгэлтэй байна уу
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Болих</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" sx={{ backgroundColor: '#ff3333', color: '#fff' }}>
+            Устгах
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          severity={snackbarSeverity}
+          onClose={() => setSnackbarOpen(false)}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
+
+
     </Box>
   );
 };
