@@ -36,8 +36,8 @@ import Header from '@/@core/components/Navbar';
 import { AxiosError } from 'axios';
 
 interface SubCategoryEn {
-  SubCategoryIDEn: number;
-  SubCategoryNameEN: string;
+  subCategoryIdEn: number;
+  subCategoryNameEn: string;
   categoryEnId: number;
 }
 
@@ -50,15 +50,14 @@ interface SubCategoryMn {
 interface CategoryEn {
   categoryEnId: number;
   categoryNameEn: string;
-  subcategories?: SubCategoryEn[]; // ✅ Added optional `subcategories`
+  subcategories?: SubCategoryEn[];
 }
 
 interface CategoryMn {
   categoryMnId: number;
   categoryNameMn: string;
-  subcategories?: SubCategoryMn[]; // ✅ Added optional `subcategories`
+  subcategories?: SubCategoryMn[];
 }
-
 
 const SubMenuAdd = () => {
   const [mnCategories, setMnCategories] = useState<CategoryMn[]>([]);
@@ -94,7 +93,7 @@ const SubMenuAdd = () => {
         const enSubcategories: SubCategoryEn[] = [];
 
         mnData.forEach((category: CategoryMn) => {
-          if (category.subcategories) { // ✅ Ensure subcategories exist before accessing
+          if (category.subcategories) {
             category.subcategories.forEach((subCategory: SubCategoryMn) => {
               mnSubcategories.push(subCategory);
             });
@@ -102,7 +101,7 @@ const SubMenuAdd = () => {
         });
 
         enData.forEach((category: CategoryEn) => {
-          if (category.subcategories) { // ✅ Ensure subcategories exist before accessing
+          if (category.subcategories) {
             category.subcategories.forEach((subCategory: SubCategoryEn) => {
               enSubcategories.push(subCategory);
             });
@@ -118,7 +117,6 @@ const SubMenuAdd = () => {
 
     loadCategories();
   }, []);
-
 
   const handleAdd = async () => {
     if (!subCategoryMn || !subCategoryEn || categoryMnId === null || categoryEnId === null) {
@@ -157,7 +155,6 @@ const SubMenuAdd = () => {
     }
   };
 
-
   const handleUpdateClick = (subcategory: SubCategoryEn) => {
     setSelectedSubCategory(subcategory);
     setUpdateModalOpen(true);
@@ -167,7 +164,7 @@ const SubMenuAdd = () => {
     if (!selectedSubCategory) return;
 
     try {
-      await updateSubCategoryEn(selectedSubCategory.SubCategoryIDEn, selectedSubCategory.SubCategoryNameEN);
+      await updateSubCategoryEn(selectedSubCategory.subCategoryIdEn, selectedSubCategory.subCategoryNameEn);
 
       setSnackbarMessage('✅ Subcategory updated successfully!');
       setSnackbarSeverity('success');
@@ -176,8 +173,8 @@ const SubMenuAdd = () => {
       // Update UI
       setSubCategoriesEn((prev) =>
         prev.map((sub) =>
-          sub.SubCategoryIDEn === selectedSubCategory.SubCategoryIDEn
-            ? { ...sub, SubCategoryNameEN: selectedSubCategory.SubCategoryNameEN }
+          sub.subCategoryIdEn === selectedSubCategory.subCategoryIdEn
+            ? { ...sub, subCategoryNameEn: selectedSubCategory.subCategoryNameEn }
             : sub
         )
       );
@@ -244,7 +241,7 @@ const SubMenuAdd = () => {
     try {
       if (deleteType === 'en') {
         await deleteSubCategoryEn(deleteSubCategoryId);
-        setSubCategoriesEn((prev) => prev.filter((sub) => sub.SubCategoryIDEn !== deleteSubCategoryId));
+        setSubCategoriesEn((prev) => prev.filter((sub) => sub.subCategoryIdEn !== deleteSubCategoryId));
       } else {
         await deleteSubCategoryMn(deleteSubCategoryId);
         setSubCategoriesMn((prev) => prev.filter((sub) => sub.SubCategoryIDMn !== deleteSubCategoryId));
@@ -268,6 +265,7 @@ const SubMenuAdd = () => {
 
     setDeleteDialogOpen(false);
   };
+
   return (
     <Box sx={{ backgroundColor: '#0d0d0d', minHeight: '100vh', color: '#ffffff' }}>
       <Header />
@@ -297,9 +295,9 @@ const SubMenuAdd = () => {
           </TableHead>
           <TableBody>
             {subCategoriesEn.map((subcategory) => (
-              <TableRow key={subcategory.SubCategoryIDEn}>
-                <TableCell sx={{ color: '#ffffff' }}>{subcategory.SubCategoryIDEn}</TableCell>
-                <TableCell sx={{ color: '#ffffff' }}>{subcategory.SubCategoryNameEN}</TableCell>
+              <TableRow key={subcategory.subCategoryIdEn}>
+                <TableCell sx={{ color: '#ffffff' }}>{subcategory.subCategoryIdEn}</TableCell>
+                <TableCell sx={{ color: '#ffffff' }}>{subcategory.subCategoryNameEn}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"
@@ -311,7 +309,7 @@ const SubMenuAdd = () => {
                   <Button
                     variant='contained'
                     sx={{ background: '#ff0000', color: '#fff', mr: 1 }}
-                    onClick={() => handleDeleteClick(subcategory.SubCategoryIDEn, 'en')}
+                    onClick={() => handleDeleteClick(subcategory.subCategoryIdEn, 'en')}
                   >
                     Delete
                   </Button>
@@ -372,7 +370,7 @@ const SubMenuAdd = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* {Update} */}
+      {/* Mongolian Update Modal */}
       <Dialog open={updateModalOpenMn} onClose={() => setUpdateModalOpenMn(false)}>
         <DialogTitle>Update Mongolian SubCategory</DialogTitle>
         <DialogContent>
@@ -395,7 +393,7 @@ const SubMenuAdd = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Update Modal */}
+      {/* English Update Modal */}
       <Dialog open={updateModalOpen} onClose={() => setUpdateModalOpen(false)}>
         <DialogTitle>Update SubCategory</DialogTitle>
         <DialogContent>
@@ -403,9 +401,9 @@ const SubMenuAdd = () => {
             <TextField
               fullWidth
               label="SubCategory Name (EN)"
-              value={selectedSubCategory.SubCategoryNameEN}
+              value={selectedSubCategory.subCategoryNameEn}
               onChange={(e) =>
-                setSelectedSubCategory({ ...selectedSubCategory, SubCategoryNameEN: e.target.value })
+                setSelectedSubCategory({ ...selectedSubCategory, subCategoryNameEn: e.target.value })
               }
               sx={{ mb: 2 }}
             />
