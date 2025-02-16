@@ -1,57 +1,133 @@
-import React from 'react';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
-import Header from '@/@core/components/Navbar';
+"use client";
 
-const Order = () => {
-  const orders = [
-    { id: 1, customer: 'John Doe', status: 'Pending', total: '$45.00', date: '2024-02-01' },
-    { id: 2, customer: 'Alice Smith', status: 'Completed', total: '$120.50', date: '2024-01-28' },
-    { id: 3, customer: 'Bob Johnson', status: 'Cancelled', total: '$25.00', date: '2024-01-25' },
-  ];
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+} from "@mui/material";
+import axios from "axios";
+import Header from "@/@core/components/Navbar";
+
+interface OrderItem {
+  OrderItemId: number;
+  CustomerOrderId: { Int32: number; Valid: boolean };
+  ProductMnID: { Int32: number; Valid: boolean };
+  ProductEnID: { Int32: number; Valid: boolean };
+  UserId: number;
+  PhoneNumber: string;
+  Quantity: number;
+  PriceAtOrder: string;
+}
+
+const OrderList = () => {
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("https://api.orchid.mn/api/v1/superadmin/order/list");
+        // Ensure response.data is an array.
+        const data = Array.isArray(response.data) ? response.data : [];
+        setOrders(data);
+        setError("");
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+        setError("Failed to fetch orders. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "70vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "70vh",
+        }}
+      >
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box>
+    <Box >
       <Header />
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#00ffba' }}>
-          Захиалгын жагсаалт (Order List)
-        </Typography>
-
-        <TableContainer component={Paper} sx={{ mt: 2 }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#1a1a1a' }}>
-                <TableCell sx={{ color: '#00ffba', fontWeight: 'bold' }}>Захиалга ID</TableCell>
-                <TableCell sx={{ color: '#00ffba', fontWeight: 'bold' }}>Хэрэглэгч</TableCell>
-                <TableCell sx={{ color: '#00ffba', fontWeight: 'bold' }}>Төлөв</TableCell>
-                <TableCell sx={{ color: '#00ffba', fontWeight: 'bold' }}>Нийт</TableCell>
-                <TableCell sx={{ color: '#00ffba', fontWeight: 'bold' }}>Огноо</TableCell>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
+        Order List
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Customer Order ID</TableCell>
+              <TableCell>Product MN ID</TableCell>
+              <TableCell>Product EN ID</TableCell>
+              <TableCell>User ID</TableCell>
+              <TableCell>Phone Number</TableCell>
+              <TableCell>Quantity</TableCell>
+              <TableCell>Price At Order</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order.OrderItemId}>
+                <TableCell>{order.OrderItemId}</TableCell>
+                <TableCell>
+                  {order.CustomerOrderId.Valid ? order.CustomerOrderId.Int32 : "-"}
+                </TableCell>
+                <TableCell>
+                  {order.ProductMnID.Valid ? order.ProductMnID.Int32 : "-"}
+                </TableCell>
+                <TableCell>
+                  {order.ProductEnID.Valid ? order.ProductEnID.Int32 : "-"}
+                </TableCell>
+                <TableCell>{order.UserId}</TableCell>
+                <TableCell>{order.PhoneNumber || "-"}</TableCell>
+                <TableCell>{order.Quantity}</TableCell>
+                <TableCell>{order.PriceAtOrder}</TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id} hover>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell 
-                    sx={{ 
-                      color: order.status === 'Pending' ? 'orange' : 
-                            order.status === 'Completed' ? 'green' : 'red',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {order.status}
-                  </TableCell>
-                  <TableCell>{order.total}</TableCell>
-                  <TableCell>{order.date}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 };
 
-export default Order;
+export default OrderList;
