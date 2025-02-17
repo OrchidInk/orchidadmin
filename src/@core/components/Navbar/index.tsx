@@ -197,7 +197,7 @@ const Header = () => {
               Ангилал нэмэх
             </MenuItem>
             <MenuItem
-              onClick={()=> handleNavigation("/admin/sMenu/add", setTypeAnchorEl, 'Дэд ангилал нэмэх')}
+              onClick={() => handleNavigation("/admin/sMenu/add", setTypeAnchorEl, 'Дэд ангилал нэмэх')}
               sx={{
                 color: activeItem === 'SubMenu нэмэх' ? '#00ffba' : 'white',
                 '&:hover': { bgcolor: '#2d2d2d' },
@@ -205,7 +205,7 @@ const Header = () => {
               }}
             >
               Дэд ангилал нэмэх
-            
+
             </MenuItem>
           </MenuList>
         </Menu>
@@ -428,16 +428,26 @@ const Header = () => {
               Хүргэлт
             </MenuItem>
             <MenuItem
-      onClick={() => handleNavigation('/admin/order', setDeliveryAnchorEl, 'Захиалга')}
-      sx={{
-        color: activeItem === 'Захиалга' ? '#00ffba' : 'white',
-        '&:hover': { bgcolor: '#2d2d2d' },
-        fontWeight: activeItem === 'Захиалга' ? 'bold' : 'normal',
-      }}
-    >
-      Захиалга
-    </MenuItem>
-  </MenuList>
+              onClick={() => handleNavigation('/admin/order', setDeliveryAnchorEl, 'Захиалга')}
+              sx={{
+                color: activeItem === 'Захиалга' ? '#00ffba' : 'white',
+                '&:hover': { bgcolor: '#2d2d2d' },
+                fontWeight: activeItem === 'Захиалга' ? 'bold' : 'normal',
+              }}
+            >
+              Захиалга
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleNavigation('/admin/payment', setDeliveryAnchorEl, 'Төлбөр')}
+              sx={{
+                color: activeItem === 'Төлбөр' ? '#00ffba' : 'white',
+                '&:hover': { bgcolor: '#2d2d2d' },
+                fontWeight: activeItem === 'Төлбөр' ? 'bold' : 'normal',
+              }}
+            >
+              Төлбөр
+            </MenuItem>
+          </MenuList>
         </Menu>
       </Toolbar>
     </AppBar>
