@@ -41,16 +41,78 @@ const BannerAdd = () => {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file && file.size <= 5 * 1024 * 1024) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setBannerImageUrl(reader.result?.toString() || "");
-            };
-            reader.readAsDataURL(file);
-        } else {
-            alert("File too large or invalid.");
+        if (!file) {
+            alert("No file selected.");
+            return;
         }
+        if (!file.type.startsWith("image/")) {
+            alert("Selected file is not an image.");
+            return;
+        }
+
+        // Create an image element to load the file.
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        img.onload = () => {
+            // Set desired maximum width/height.
+            const MAX_WIDTH = 1280;
+            const MAX_HEIGHT = 720;
+            let { width, height } = img;
+
+            // Calculate new dimensions while maintaining aspect ratio.
+            if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+            }
+            if (height > MAX_HEIGHT) {
+                width = Math.round((width * MAX_HEIGHT) / height);
+                height = MAX_HEIGHT;
+            }
+
+            // Create a canvas with the new dimensions.
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                alert("Could not get canvas context");
+                return;
+            }
+            // Draw the image onto the canvas.
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Convert canvas to a Blob.
+            // The third argument is a quality parameter (0.0 to 1.0).
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        // Optionally, check blob size.
+                        if (blob.size > 5 * 1024 * 1024) { // e.g., 5MB limit
+                            alert("Compressed image is still too large. Please choose a smaller file.");
+                            return;
+                        }
+                        // Convert the blob to a data URL.
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            setBannerImageUrl(reader.result?.toString() || "");
+                        };
+                        reader.readAsDataURL(blob);
+                    } else {
+                        alert("Image compression failed. Please try another image.");
+                    }
+                },
+                file.type,
+                0.7 // Adjust quality (0.0 to 1.0) as needed
+            );
+            URL.revokeObjectURL(objectUrl);
+        };
+        img.onerror = () => {
+            alert("Failed to load image.");
+            URL.revokeObjectURL(objectUrl);
+        };
+        img.src = objectUrl;
     };
+
 
     const handleAddSubmit = async () => {
         if (!bannerImageUrl) return alert("Please upload a banner image.");
@@ -122,7 +184,7 @@ const BannerAdd = () => {
     };
 
     return (
-        <Box sx={{ backgroundColor: "#0d0d0d", color: "#fff", minHeight: "100vh"  }}>
+        <Box sx={{ backgroundColor: "#0d0d0d", color: "#fff", minHeight: "100vh" }}>
             <Header />
             <Typography variant="h4" gutterBottom>
                 Banner Management

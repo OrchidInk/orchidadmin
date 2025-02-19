@@ -263,20 +263,86 @@ const Product = () => {
     setPriceMn('');
     setImagesPathMn('');
   };
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, lang: "en" | "mn") => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    lang: "en" | "mn"
+  ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (lang === "en" && editingProductEn) {
-          setEditingProductEn({ ...editingProductEn, ImagesPathEn: reader.result as string });
-        } else if (lang === "mn" && editingProductMn) {
-          setEditingProductMn({ ...editingProductMn, ImagesPathMn: reader.result as string });
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) {
+      alert("No file selected.");
+      return;
     }
+    if (!file.type.startsWith("image/")) {
+      alert("Selected file is not an image.");
+      return;
+    }
+
+    // Define max dimensions and quality
+    const MAX_WIDTH = 1280;
+    const MAX_HEIGHT = 720;
+    const QUALITY = 0.7; // 70% quality
+
+    // Create a temporary URL for the file and load it into an image element
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = objectUrl;
+    img.onload = () => {
+      let { width, height } = img;
+
+      // Calculate new dimensions while maintaining aspect ratio
+      if (width > MAX_WIDTH) {
+        height = Math.round((MAX_WIDTH / width) * height);
+        width = MAX_WIDTH;
+      }
+      if (height > MAX_HEIGHT) {
+        width = Math.round((MAX_HEIGHT / height) * width);
+        height = MAX_HEIGHT;
+      }
+
+      // Create a canvas with new dimensions and draw the image onto it
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert the canvas to a Blob with the given quality
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // Check the compressed size if needed
+              console.log("Compressed file size:", blob.size, "bytes");
+              // Convert blob to Data URL.
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                if (lang === "en") {
+                  // For example, update state for English image
+                  setImagesPathEn(reader.result as string);
+                } else {
+                  setImagesPathMn(reader.result as string);
+                }
+              };
+              reader.readAsDataURL(blob);
+            } else {
+              alert("Image compression failed. Please try another image.");
+            }
+          },
+          file.type,
+          QUALITY
+        );
+      } else {
+        alert("Canvas context error.");
+      }
+      // Revoke the temporary URL.
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.onerror = () => {
+      alert("Failed to load image.");
+      URL.revokeObjectURL(objectUrl);
+    };
   };
+
 
   // Handle image upload
   const handleImageUploadEn = (e: React.ChangeEvent<HTMLInputElement>) => {
