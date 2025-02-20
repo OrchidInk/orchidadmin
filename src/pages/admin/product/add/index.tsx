@@ -277,19 +277,19 @@ const Product = () => {
       return;
     }
 
-    // Define max dimensions and quality
-    const MAX_WIDTH = 1280;
-    const MAX_HEIGHT = 720;
-    const QUALITY = 0.7; // 70% quality
+    // Set maximum dimensions and quality (adjust these values as needed)
+    const MAX_WIDTH = 800;  // For example, 800px max width
+    const MAX_HEIGHT = 600; // 600px max height
+    const QUALITY = 0.6;    // 60% quality
 
-    // Create a temporary URL for the file and load it into an image element
+    // Create an image element to load the file.
     const objectUrl = URL.createObjectURL(file);
     const img = new Image();
     img.src = objectUrl;
     img.onload = () => {
       let { width, height } = img;
 
-      // Calculate new dimensions while maintaining aspect ratio
+      // Calculate new dimensions while maintaining aspect ratio.
       if (width > MAX_WIDTH) {
         height = Math.round((MAX_WIDTH / width) * height);
         width = MAX_WIDTH;
@@ -299,42 +299,44 @@ const Product = () => {
         height = MAX_HEIGHT;
       }
 
-      // Create a canvas with new dimensions and draw the image onto it
+      // Create a canvas and draw the image into it.
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Convert the canvas to a Blob with the given quality
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              // Check the compressed size if needed
-              console.log("Compressed file size:", blob.size, "bytes");
-              // Convert blob to Data URL.
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                if (lang === "en") {
-                  // For example, update state for English image
-                  setImagesPathEn(reader.result as string);
-                } else {
-                  setImagesPathMn(reader.result as string);
-                }
-              };
-              reader.readAsDataURL(blob);
-            } else {
-              alert("Image compression failed. Please try another image.");
-            }
-          },
-          file.type,
-          QUALITY
-        );
-      } else {
-        alert("Canvas context error.");
+      if (!ctx) {
+        alert("Canvas not supported.");
+        return;
       }
-      // Revoke the temporary URL.
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert the canvas to a Blob.
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            alert("Image compression failed. Please try a different image.");
+            return;
+          }
+          console.log("Compressed file size:", blob.size, "bytes");
+          // (Optional) Check if blob size is acceptable.
+          if (blob.size > 5 * 1024 * 1024) {
+            alert("Compressed image is still too large. Please choose a smaller image.");
+            return;
+          }
+          // Convert Blob to Data URL.
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (lang === "en") {
+              setImagesPathEn(reader.result as string);
+            } else {
+              setImagesPathMn(reader.result as string);
+            }
+          };
+          reader.readAsDataURL(blob);
+        },
+        file.type,
+        QUALITY
+      );
       URL.revokeObjectURL(objectUrl);
     };
     img.onerror = () => {
@@ -344,28 +346,28 @@ const Product = () => {
   };
 
 
-  // Handle image upload
-  const handleImageUploadEn = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagesPathEn(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // // Handle image upload
+  // const handleImageUploadEn = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setImagesPathEn(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
-  const handleImageUploadMn = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagesPathMn(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // const handleImageUploadMn = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setImagesPathMn(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
 
   // Handle update modal open
@@ -617,7 +619,13 @@ const Product = () => {
                 </FormControl>
                 <TextField fullWidth label="Price" value={priceEn} onChange={(e) => setPriceEn(e.target.value)} />
                 <TextField fullWidth label="Stock Quantity" type="number" value={stockQuantity || ''} onChange={(e) => setStockQuantity(Number(e.target.value))} />
-                <input type="file" onChange={handleImageUploadEn} style={{ marginTop: 16 }} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, "en")}
+                  style={{ marginTop: 16 }}
+                />
+
                 <TextField fullWidth label="DescriptionEn" value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} />
                 <TextField fullWidth label="BrandEn" value={brandEn} onChange={(e) => setBrandEn(e.target.value)} />
                 <TextField fullWidth label="ManufacturedCountryEn" value={manufacturedCountryEn} onChange={(e) => setManufacturedCountryEn(e.target.value)} />
@@ -656,7 +664,13 @@ const Product = () => {
                 </FormControl>
                 <TextField fullWidth label="Price" value={priceMn} onChange={(e) => setPriceMn(e.target.value)} />
                 <TextField fullWidth label="Stock Quantity" type="number" value={stockQuantity || ''} onChange={(e) => setStockQuantity(Number(e.target.value))} />
-                <input type="file" onChange={handleImageUploadMn} style={{ marginTop: 16 }} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, "mn")}
+                  style={{ marginTop: 16 }}
+                />
+
                 <TextField fullWidth label="DescriptionMn" value={descriptionMn} onChange={(e) => setDescriptionMn(e.target.value)} />
                 <TextField fullWidth label="BrandMn" value={brandMn} onChange={(e) => setBrandMn(e.target.value)} />
                 <TextField fullWidth label="ManufacturedCountryMn" value={manufacturedCountryMn} onChange={(e) => setManufacturedCountryMn(e.target.value)} />
