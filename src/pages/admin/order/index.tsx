@@ -41,7 +41,8 @@ const OrderList = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("https://api.orchid.mn/api/v1/superadmin/order/list");
+        // const response = await axios.get("https://api.orchid.mn/api/v1/superadmin/order/list");
+        const response = await axios.get("http://localhost:9000/api/v1/superadmin/order/list");
         // Ensure response.data is an array.
         const data = Array.isArray(response.data) ? response.data : [];
         setOrders(data);

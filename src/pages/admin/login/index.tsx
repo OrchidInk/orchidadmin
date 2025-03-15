@@ -36,7 +36,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${BASEURL}/api/v1/superadmin/login`, {
+      const response = await axios.post(`${BASEURL}/login`, {
         username,
         password,
       });
