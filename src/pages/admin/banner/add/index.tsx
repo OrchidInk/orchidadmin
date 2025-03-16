@@ -119,7 +119,8 @@ const BannerAdd = () => {
         if (!bannerImageUrl) return alert("Please upload a banner image.");
 
         try {
-            await axios.post("https://api.orchid.mn/api/v1/superadmin/banner/create", {
+            // await axios.post("https://api.orchid.mn/api/v1/superadmin/banner/create", {
+            await axios.post("http://localhost:9000/api/v1/superadmin/banner/create", {
                 BannerImageUrl: bannerImageUrl,
             });
             alert("Banner added successfully!");
