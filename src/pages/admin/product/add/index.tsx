@@ -42,25 +42,24 @@ interface ProductEn {
   MaterialEn: any
   ProductEnID: number
   ProductNameEn: string | null
-  SCategoryIDEn: number | null
+  SCategoryIdEn: number | null
   PriceEn: string | null
   StockQuantity: number | null
   ImagesPathEn: string | null
   DescriptionEn: string | null
   BrandEn: string | null
   ManufacturedCountryEn: string | null
-  // For add/update, we send the selected colors/sizes as comma‑separated strings
-  ColorEn: string | null
-  SizeEn: string | null
+  ColorEn: string | null // legacy comma-separated string (if needed)
+  SizeEn: string | null  // legacy comma-separated string (if needed)
   ProductCodeEn: string | null
   RetailPriceEn: string | null
   WarehouseStockEn: number | null
   CreatedAt: { Time: string } | null
-  // Extra fields returned by your enhanced query:
-  ColorIds: string | null
+  // Extra fields from an enhanced query:
   ColorNames: string | null
-  SizeIds: string | null
   SizeNames: string | null
+  colorId: number[]    // new property: array of color IDs
+  sizeId: number[]
 }
 
 interface ProductMn {
@@ -69,35 +68,58 @@ interface ProductMn {
   MaterialMn: any
   ProductMnID: number
   ProductNameMn: string | null
-  SCategoryIDMn: number | null
+  SCategoryIdMn: number | null
   PriceMn: string | null
   StockQuantity: number | null
   ImagesPathMn: string | null
   DescriptionMn: string | null
   BrandMn: string | null
   ManufacturedCountryMn: string | null
-  ColorMn: string | null
-  SizeMn: string | null
+  ColorMn: string | null // legacy comma-separated string (if needed)
+  SizeMn: string | null  // legacy comma-separated string (if needed)
   ProductCodeMn: string | null
   RetailPriceMn: string | null
   WarehouseStockMn: number | null
   CreatedAt: { Time: string } | null
+
+  colorId: number[]     // new property: array of color IDs
+  sizeId: number[]
+  ColorNames: string | null
+  SizeNames: string | null
 }
 
 interface ColorItem {
   id: number
   colorName: string
+  ColorId: number
+  Color: string
 }
 
 interface Size2Item {
   id: number
   sizeName: string
+  SizeId: number
+  Size: string
+}
+
+// A union type for the shared properties needed in our detail modals.
+type ProductUnion = {
+  ColorNames: string | null
+  SizeNames: string | null
 }
 
 // --- Helper to parse Postgres array strings ---
 const parseArrayString = (str: string): string[] => {
-  if (!str || str === '{}') return []
-  return str.replace(/^{|}$/g, '').split(',').map(item => item.trim())
+  if (!str) return []
+  try {
+    const parsed = JSON.parse(str)
+    if (Array.isArray(parsed)) {
+      return parsed
+    }
+  } catch (error) {
+    // fallback below
+  }
+  return str.split(',').map(item => item.trim()).filter(item => item.length > 0)
 }
 
 // --- Helper to display fallback text if value is null/empty ---
@@ -118,9 +140,9 @@ const Product = () => {
   const [descriptionEn, setDescriptionEn] = useState('')
   const [brandEn, setBrandEn] = useState('')
   const [manufacturedCountryEn, setManufacturedCountryEn] = useState('')
-  // Multi‑select arrays for colors and sizes:
-  const [selectedColorsEn, setSelectedColorsEn] = useState<string[]>([])
-  const [selectedSizesEn, setSelectedSizesEn] = useState<string[]>([])
+  // For English, use numeric arrays (IDs)
+  const [selectedColorsEn, setSelectedColorsEn] = useState<number[]>([])
+  const [selectedSizesEn, setSelectedSizesEn] = useState<number[]>([])
   const [penOutEn, setPenOutEn] = useState('')
   const [featuresEn, setFeaturesEn] = useState('')
   const [materialEn, setMaterialEn] = useState('')
@@ -142,9 +164,9 @@ const Product = () => {
   const [descriptionMn, setDescriptionMn] = useState('')
   const [brandMn, setBrandMn] = useState('')
   const [manufacturedCountryMn, setManufacturedCountryMn] = useState('')
-  // Multi‑select arrays for colors and sizes:
-  const [selectedColorsMn, setSelectedColorsMn] = useState<string[]>([])
-  const [selectedSizesMn, setSelectedSizesMn] = useState<string[]>([])
+  // For Mongolian, use separate numeric arrays (IDs)
+  const [selectedColorsMn, setSelectedColorsMn] = useState<number[]>([])
+  const [selectedSizesMn, setSelectedSizesMn] = useState<number[]>([])
   const [penOutMn, setPenOutMn] = useState('')
   const [featuresMn, setFeaturesMn] = useState('')
   const [materialMn, setMaterialMn] = useState('')
@@ -160,6 +182,7 @@ const Product = () => {
 
   // ===== (3) Lists & Modal States =====
   const [categoriesEn, setCategoriesEn] = useState<Category[]>([])
+  const [categoriesMn, setCategoriesMn] = useState<Category[]>([])
   const [productsEn, setProductsEn] = useState<ProductEn[]>([])
   const [productsMn, setProductsMn] = useState<ProductMn[]>([])
 
@@ -197,8 +220,7 @@ const Product = () => {
   const [openSizeDetailModal, setOpenSizeDetailModal] = useState(false)
   const [sizeDetails, setSizeDetails] = useState<string[]>([])
 
-  // ===== Fetch Functions =====
-  const fetchCategories = async () => {
+  const fetchCategoriesEn = async () => {
     try {
       const response = await api.get('/sCategory/listEn')
       setCategoriesEn(
@@ -208,11 +230,32 @@ const Product = () => {
         }))
       )
     } catch (err) {
-      setSnackbarMessage('Failed to fetch categories.')
+      setSnackbarMessage('Failed to fetch English categories.')
       setSnackbarSeverity('error')
       setSnackbarOpen(true)
     }
   }
+
+  const fetchCategoriesMn = async () => {
+    try {
+      const response = await api.get('/sCategory/listMn')
+      setCategoriesMn(
+        response.data.map((cat: any) => ({
+          id: cat.SCategoryIdMn,
+          name: cat.SCategoryNameMn,
+        }))
+      )
+    } catch (err) {
+      setSnackbarMessage('Failed to fetch Mongolian categories.')
+      setSnackbarSeverity('error')
+      setSnackbarOpen(true)
+    }
+  }
+
+  useEffect(() => {
+    // Run both GET requests concurrently
+    Promise.all([fetchCategoriesEn(), fetchCategoriesMn()])
+  }, [])
 
   const fetchProductsEn = async () => {
     try {
@@ -236,11 +279,9 @@ const Product = () => {
     }
   }
 
-  // Fetch available colors and sizes for use in the multi-selects
   const fetchColors = async () => {
     try {
       const response = await api.get('/color/list')
-      // Assuming response.data is an array of objects with id and colorName.
       setColorsEn(response.data || [])
       setColorsMn(response.data || [])
     } catch (err) {
@@ -251,7 +292,6 @@ const Product = () => {
   const fetchSizes = async () => {
     try {
       const response = await api.get('/size/list')
-      // Assuming response.data is an array of objects with id and sizeName.
       setSize2En(response.data || [])
       setSize2Mn(response.data || [])
     } catch (err) {
@@ -260,7 +300,7 @@ const Product = () => {
   }
 
   useEffect(() => {
-    fetchCategories()
+    Promise.all([fetchCategoriesEn(), fetchCategoriesMn()])
     fetchProductsEn()
     fetchProductsMn()
     fetchColors()
@@ -268,13 +308,13 @@ const Product = () => {
   }, [])
 
   // ===== Detail Modal Handlers =====
-  const handleShowColorDetails = (product: ProductEn) => {
+  const handleShowColorDetails = (product: ProductUnion) => {
     const colors = parseArrayString(product.ColorNames || '')
     setColorDetails(colors.length ? colors : ['Одоогоор бүтээгдэхүүн алга байна'])
     setOpenColorDetailModal(true)
   }
 
-  const handleShowSizeDetails = (product: ProductEn) => {
+  const handleShowSizeDetails = (product: ProductUnion) => {
     const sizes = parseArrayString(product.SizeNames || '')
     setSizeDetails(sizes.length ? sizes : ['Одоогоор бүтээгдэхүүн алга байна'])
     setOpenSizeDetailModal(true)
@@ -358,9 +398,13 @@ const Product = () => {
       DescriptionEn: descriptionEn,
       BrandEn: brandEn,
       ManufacturedCountryEn: manufacturedCountryEn,
-      // Merge multi-select arrays into comma-separated strings:
-      ColorEn: selectedColorsEn.join(','),
-      SizeEn: selectedSizesEn.join(','),
+      ColorEn: selectedColorsEn.join(','), // Legacy, optional
+      SizeEn: selectedSizesEn.join(','),   // Legacy, optional
+
+      // **Fix this part:**
+      ColorIds: selectedColorsEn,
+      SizeIds: selectedSizesEn,
+
       PenOutEn: penOutEn,
       FeaturesEn: featuresEn,
       MaterialEn: materialEn,
@@ -374,6 +418,7 @@ const Product = () => {
       RetailPriceEn: parseFloat(retailPriceEn || '0').toFixed(2),
       WarehouseStockEn: warehouseStockEn,
     }
+
     try {
       await api.post('/product/createEn', productDataEn)
       setSnackbarMessage('English product added successfully.')
@@ -402,6 +447,11 @@ const Product = () => {
       ManufacturedCountryMn: manufacturedCountryMn,
       ColorMn: selectedColorsMn.join(','),
       SizeMn: selectedSizesMn.join(','),
+
+      // **Fix this part:**
+      ColorIds: selectedColorsMn,
+      SizeIds: selectedSizesMn,
+
       PenOutMn: penOutMn,
       FeaturesMn: featuresMn,
       MaterialMn: materialMn,
@@ -415,6 +465,7 @@ const Product = () => {
       RetailPriceMn: parseFloat(retailPriceMn || '0').toFixed(2),
       WarehouseStockMn: warehouseStockMn,
     }
+
     try {
       await api.post('/product/createMn', productDataMn)
       setSnackbarMessage('Mongolian product added successfully.')
@@ -559,17 +610,29 @@ const Product = () => {
       if (editingColorId !== null) {
         await api.patch(`/color/update/${editingColorId}`, { ColorId: editingColorId, Color: tempColor })
         if (currentLangForColor === 'en') {
-          setColorsEn(prev => prev.map(item => item.id === editingColorId ? { ...item, colorName: tempColor } : item))
+          setColorsEn(prev =>
+            prev.map(item =>
+              item.id === editingColorId
+                ? { ...item, Color: tempColor, colorName: tempColor }
+                : item
+            )
+          )
         } else {
-          setColorsMn(prev => prev.map(item => item.id === editingColorId ? { ...item, colorName: tempColor } : item))
+          setColorsMn(prev =>
+            prev.map(item =>
+              item.id === editingColorId
+                ? { ...item, Color: tempColor, colorName: tempColor }
+                : item
+            )
+          )
         }
       } else {
         const response = await api.post('/color/create', { colorName: tempColor })
         const { ColorId, Color } = response.data
         if (currentLangForColor === 'en') {
-          setColorsEn(prev => [...prev, { id: ColorId, colorName: Color }])
+          setColorsEn(prev => [...prev, { id: ColorId, colorName: Color, ColorId, Color }])
         } else {
-          setColorsMn(prev => [...prev, { id: ColorId, colorName: Color }])
+          setColorsMn(prev => [...prev, { id: ColorId, colorName: Color, ColorId, Color }])
         }
       }
       setSnackbarMessage('Color saved successfully!')
@@ -587,16 +650,16 @@ const Product = () => {
 
   const handleEditColor = (item: ColorItem) => {
     setEditingColorId(item.id)
-    setTempColor(item.colorName)
+    setTempColor(item.Color)
   }
 
   const handleDeleteColor = async (id: number) => {
     try {
       await api.delete(`/color/delete/${id}`)
       if (currentLangForColor === 'en') {
-        setColorsEn(prev => prev.filter(item => item.id !== id))
+        setColorsEn(prev => prev.filter(item => item.ColorId !== id))
       } else {
-        setColorsMn(prev => prev.filter(item => item.id !== id))
+        setColorsMn(prev => prev.filter(item => item.ColorId !== id))
       }
       setSnackbarMessage('Color deleted successfully!')
       setSnackbarSeverity('success')
@@ -622,17 +685,25 @@ const Product = () => {
       if (editingSize2Id !== null) {
         await api.patch(`/size/update/${editingSize2Id}`, { SizeId: editingSize2Id, Size: tempSize2 })
         if (currentLangForSize2 === 'en') {
-          setSize2En(prev => prev.map(item => item.id === editingSize2Id ? { ...item, sizeName: tempSize2 } : item))
+          setSize2En(prev =>
+            prev.map(item =>
+              item.id === editingSize2Id ? { ...item, sizeName: tempSize2 } : item
+            )
+          )
         } else {
-          setSize2Mn(prev => prev.map(item => item.id === editingSize2Id ? { ...item, sizeName: tempSize2 } : item))
+          setSize2Mn(prev =>
+            prev.map(item =>
+              item.id === editingSize2Id ? { ...item, sizeName: tempSize2 } : item
+            )
+          )
         }
       } else {
         const response = await api.post('/size/create', { sizeName: tempSize2 })
         const { SizeId, Size } = response.data
         if (currentLangForSize2 === 'en') {
-          setSize2En(prev => [...prev, { id: SizeId, sizeName: Size }])
+          setSize2En(prev => [...prev, { id: SizeId, sizeName: Size, SizeId, Size }])
         } else {
-          setSize2Mn(prev => [...prev, { id: SizeId, sizeName: Size }])
+          setSize2Mn(prev => [...prev, { id: SizeId, sizeName: Size, SizeId, Size }])
         }
       }
       setSnackbarMessage('Size saved successfully!')
@@ -649,8 +720,8 @@ const Product = () => {
   }
 
   const handleEditSize2 = (item: Size2Item) => {
-    setEditingSize2Id(item.id)
-    setTempSize2(item.sizeName)
+    setEditingSize2Id(item.SizeId)
+    setTempSize2(item.Size)
   }
 
   const handleDeleteSize2 = async (id: number) => {
@@ -672,25 +743,35 @@ const Product = () => {
     }
   }
 
-  // ===== Render =====
   return (
     <>
       <Header />
       <Box sx={{ backgroundColor: '#0d0d0d', color: '#fff', p: 4 }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>Product Management</Typography>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Product Management
+        </Typography>
         {/* Top Buttons */}
         <Box sx={{ mb: 3 }}>
-          <Button variant="contained" onClick={() => setAddModalOpen(true)} sx={{ backgroundColor: '#00ffba', mr: 2, color: 'black' }}>
+          <Button
+            variant="contained"
+            onClick={() => setAddModalOpen(true)}
+            sx={{ backgroundColor: '#00ffba', mr: 2, color: 'black' }}
+          >
             Add English Product
           </Button>
-          <Button variant="contained" onClick={() => setAddModalMnOpen(true)} sx={{ backgroundColor: '#00ffba', mr: 2, color: 'black' }}>
+          <Button
+            variant="contained"
+            onClick={() => setAddModalMnOpen(true)}
+            sx={{ backgroundColor: '#00ffba', mr: 2, color: 'black' }}
+          >
             Add Mongolian Product
           </Button>
-          {/* (Optionally you can include separate manage buttons for colors and sizes here) */}
         </Box>
 
         {/* ===== English Products Table ===== */}
-        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>English Products</Typography>
+        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+          English Products
+        </Typography>
         <TableContainer component={Paper} sx={{ backgroundColor: '#121212' }}>
           <Table>
             <TableHead>
@@ -713,14 +794,18 @@ const Product = () => {
             </TableHead>
             <TableBody>
               {productsEn.length > 0 ? (
-                productsEn.map((product) => (
+                productsEn.map(product => (
                   <TableRow key={product.ProductEnID}>
                     <TableCell>
-                      <Avatar src={product.ImagesPathEn || '/placeholder.jpg'} alt={displayValue(product.ProductNameEn)} sx={{ width: 50, height: 50 }} />
+                      <Avatar
+                        src={product.ImagesPathEn || '/placeholder.jpg'}
+                        alt={displayValue(product.ProductNameEn)}
+                        sx={{ width: 50, height: 50 }}
+                      />
                     </TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameEn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIDEn)}</TableCell>
+                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdEn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.PriceEn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.ManufacturedCountryEn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.StockQuantity)}</TableCell>
@@ -741,7 +826,10 @@ const Product = () => {
                       {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      <Button variant="contained" color="primary" sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
                         onClick={() => {
                           setEditingProduct(product)
                           setUpdateModalOpen(true)
@@ -749,7 +837,9 @@ const Product = () => {
                       >
                         Update
                       </Button>
-                      <Button variant="contained" sx={{ background: '#ff3333', color: '#fff' }}
+                      <Button
+                        variant="contained"
+                        sx={{ background: '#ff3333', color: '#fff' }}
                         onClick={() => handleDeleteProductEn(product)}
                       >
                         Delete
@@ -769,7 +859,9 @@ const Product = () => {
         </TableContainer>
 
         {/* ===== Mongolian Products Table ===== */}
-        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Mongolian Products</Typography>
+        <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+          Mongolian Products
+        </Typography>
         <TableContainer component={Paper} sx={{ backgroundColor: '#121212' }}>
           <Table>
             <TableHead>
@@ -792,14 +884,18 @@ const Product = () => {
             </TableHead>
             <TableBody>
               {productsMn.length > 0 ? (
-                productsMn.map((product) => (
+                productsMn.map(product => (
                   <TableRow key={product.ProductMnID}>
                     <TableCell>
-                      <Avatar src={product.ImagesPathMn || '/placeholder.jpg'} alt={displayValue(product.ProductNameMn)} sx={{ width: 50, height: 50 }} />
+                      <Avatar
+                        src={product.ImagesPathMn || '/placeholder.jpg'}
+                        alt={displayValue(product.ProductNameMn)}
+                        sx={{ width: 50, height: 50 }}
+                      />
                     </TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameMn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIDMn)}</TableCell>
+                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdMn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.PriceMn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.ManufacturedCountryMn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.StockQuantity)}</TableCell>
@@ -807,12 +903,12 @@ const Product = () => {
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.MaterialMn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.RetailPriceMn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>
-                      <Button variant="outlined" size="small">
+                      <Button variant="outlined" size="small" onClick={() => handleShowColorDetails(product)}>
                         View Colors
                       </Button>
                     </TableCell>
                     <TableCell sx={{ color: '#fff' }}>
-                      <Button variant="outlined" size="small">
+                      <Button variant="outlined" size="small" onClick={() => handleShowSizeDetails(product)}>
                         View Sizes
                       </Button>
                     </TableCell>
@@ -820,7 +916,10 @@ const Product = () => {
                       {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      <Button variant="contained" color="primary" sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
                         onClick={() => {
                           setEditingProductMn(product)
                           setUpdateModalMnOpen(true)
@@ -828,7 +927,9 @@ const Product = () => {
                       >
                         Update
                       </Button>
-                      <Button variant="contained" sx={{ background: '#ff3333', color: '#fff' }}
+                      <Button
+                        variant="contained"
+                        sx={{ background: '#ff3333', color: '#fff' }}
                         onClick={() => handleDeleteProductMn(product)}
                       >
                         Delete
@@ -847,12 +948,12 @@ const Product = () => {
           </Table>
         </TableContainer>
 
-        {/* ===== English Product Add Modal (with integrated multi-selects for Colors & Sizes) ===== */}
+        {/* ===== English Product Add Modal ===== */}
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>Add English Product</DialogTitle>
           <DialogContent>
             <Grid container spacing={2}>
-              {/* Left Column: Basic Details */}
+              {/* Left Column */}
               <Grid item xs={6}>
                 <Typography variant="h6">Product Details</Typography>
                 <TextField fullWidth label="Product Name" value={productNameEn} onChange={e => setProductNameEn(e.target.value)} />
@@ -860,7 +961,9 @@ const Product = () => {
                   <InputLabel>SubCategory</InputLabel>
                   <Select value={sCategoryEnId || ''} onChange={e => setSCategoryEnId(Number(e.target.value))}>
                     {categoriesEn.map(category => (
-                      <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.name}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -873,10 +976,9 @@ const Product = () => {
                 <TextField fullWidth label="Brand" value={brandEn} onChange={e => setBrandEn(e.target.value)} />
                 <TextField fullWidth label="Manufactured Country" value={manufacturedCountryEn} onChange={e => setManufacturedCountryEn(e.target.value)} />
               </Grid>
-              {/* Right Column: Colors, Sizes & Additional Details */}
+              {/* Right Column */}
               <Grid item xs={6}>
                 <Typography variant="h6">Select Colors & Sizes</Typography>
-                {/* Multi-select for Colors */}
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="colors-en-label">Colors</InputLabel>
                   <Select
@@ -884,13 +986,24 @@ const Product = () => {
                     multiple
                     value={selectedColorsEn}
                     onChange={(e) =>
-                      setSelectedColorsEn(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
+                      setSelectedColorsEn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
                     }
-                    renderValue={(selected) => selected.join(', ')}
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = colorsEn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
+                        })
+                        .join(', ')
+                    }
                   >
-                    {colorsEn.map((color) => (
-                      <MenuItem key={color.id} value={color.colorName}>
-                        {color.colorName}
+                    {colorsEn.map(color => (
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
                       </MenuItem>
                     ))}
                   </Select>
@@ -898,7 +1011,6 @@ const Product = () => {
                     Manage Colors
                   </Button>
                 </FormControl>
-                {/* Multi-select for Sizes */}
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="sizes-en-label">Sizes</InputLabel>
                   <Select
@@ -906,13 +1018,24 @@ const Product = () => {
                     multiple
                     value={selectedSizesEn}
                     onChange={(e) =>
-                      setSelectedSizesEn(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
+                      setSelectedSizesEn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
                     }
-                    renderValue={(selected) => selected.join(', ')}
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = size2En.find(s => s.SizeId === id)
+                          return found ? found.Size : id
+                        })
+                        .join(', ')
+                    }
                   >
-                    {size2En.map((size) => (
-                      <MenuItem key={size.id} value={size.sizeName}>
-                        {size.sizeName}
+                    {size2En.map(size => (
+                      <MenuItem key={size.SizeId} value={size.SizeId}>
+                        {size.Size}
                       </MenuItem>
                     ))}
                   </Select>
@@ -920,7 +1043,6 @@ const Product = () => {
                     Manage Sizes
                   </Button>
                 </FormControl>
-                {/* Additional Fields */}
                 <TextField fullWidth label="PenOutput" value={penOutEn} onChange={e => setPenOutEn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Features" value={featuresEn} onChange={e => setFeaturesEn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Material" value={materialEn} onChange={e => setMaterialEn(e.target.value)} sx={{ mt: 2 }} />
@@ -942,7 +1064,7 @@ const Product = () => {
           </DialogActions>
         </Dialog>
 
-        {/* ===== Mongolian Product Add Modal (with integrated multi-selects for Colors & Sizes) ===== */}
+        {/* ===== Mongolian Product Add Modal ===== */}
         <Dialog open={addModalMnOpen} onClose={() => setAddModalMnOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>Add Mongolian Product</DialogTitle>
           <DialogContent>
@@ -953,7 +1075,7 @@ const Product = () => {
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel>SubCategory</InputLabel>
                   <Select value={sCategoryMnId || ''} onChange={e => setSCategoryMnId(Number(e.target.value))}>
-                    {categoriesEn.map(category => (
+                    {categoriesMn.map(category => (
                       <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
                     ))}
                   </Select>
@@ -969,33 +1091,38 @@ const Product = () => {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h6">Select Colors & Sizes</Typography>
-                {/* Multi-select for Colors */}
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="colors-mn-label">Colors</InputLabel>
                   <Select
-                    sx={{
-                      color: 'fff',
-                      backgroundColor: "#121212"
-                    }}
                     labelId="colors-mn-label"
                     multiple
                     value={selectedColorsMn}
                     onChange={(e) =>
-                      setSelectedColorsMn(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
+                      setSelectedColorsMn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
                     }
-                    renderValue={(selected) => selected.join(', ')}
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = colorsMn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
+                        })
+                        .join(', ')
+                    }
                   >
-                    {colorsMn.map((color) => (
-                      <MenuItem key={color.id} value={color.colorName} sx={{ color: '#fff', backgroundColor: '#121212' }}>
-                        {color.colorName}
+                    {colorsMn.map(color => (
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
                       </MenuItem>
                     ))}
                   </Select>
-                  <Button variant="outlined" onClick={() => openColorModalFn('mn')} sx={{ mt: 1 }}>
+                  <Button variant="outlined" onClick={() => openColorModalFn('en')} sx={{ mt: 1 }}>
                     Manage Colors
                   </Button>
                 </FormControl>
-                {/* Multi-select for Sizes */}
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="sizes-mn-label">Sizes</InputLabel>
                   <Select
@@ -1003,17 +1130,28 @@ const Product = () => {
                     multiple
                     value={selectedSizesMn}
                     onChange={(e) =>
-                      setSelectedSizesMn(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
+                      setSelectedSizesMn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
                     }
-                    renderValue={(selected) => selected.join(', ')}
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = size2Mn.find(s => s.SizeId === id)
+                          return found ? found.Size : id
+                        })
+                        .join(', ')
+                    }
                   >
-                    {size2Mn.map((size) => (
-                      <MenuItem key={size.id} value={size.sizeName}>
-                        {size.sizeName}
+                    {size2Mn.map(size => (
+                      <MenuItem key={size.SizeId} value={size.SizeId}>
+                        {size.Size}
                       </MenuItem>
                     ))}
                   </Select>
-                  <Button variant="outlined" onClick={() => openSize2ModalFn('mn')} sx={{ mt: 1 }}>
+                  <Button variant="outlined" onClick={() => openSize2ModalFn('en')} sx={{ mt: 1 }}>
                     Manage Sizes
                   </Button>
                 </FormControl>
@@ -1023,7 +1161,7 @@ const Product = () => {
                 <TextField fullWidth label="Staple Size" value={stapleSizeMn} onChange={e => setStapleSizeMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Capacity" value={capacityMn} onChange={e => setCapacityMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Weight" value={weightMn} onChange={e => setWeightMn(e.target.value)} sx={{ mt: 2 }} />
-                <TextField fullWidth label="Thickness" value={thicknessMn} onChange={e => setThinknessEn(e.target.value)} sx={{ mt: 2 }} />
+                <TextField fullWidth label="Thickness" value={thicknessMn} onChange={e => setThinknessMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Packaging" value={packagingMn} onChange={e => setPackagingMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Product Code" value={productCodeMn} onChange={e => setProductCodeMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Cost Price" value={costPriceMn} onChange={e => setCostPriceMn(e.target.value)} sx={{ mt: 2 }} />
@@ -1034,7 +1172,9 @@ const Product = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setAddModalMnOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddProductMn} variant="contained">Add Mongolian Product</Button>
+            <Button onClick={handleAddProductMn} variant="contained">
+              Add Mongolian Product
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -1057,9 +1197,71 @@ const Product = () => {
                 <TextField fullWidth label="Stock Quantity" type="number" value={editingProduct.StockQuantity || ''} onChange={e => setEditingProduct({ ...editingProduct, StockQuantity: Number(e.target.value) })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Retail Price" value={editingProduct.RetailPriceEn || ''} onChange={e => setEditingProduct({ ...editingProduct, RetailPriceEn: e.target.value })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Warehouse Stock" type="number" value={editingProduct.WarehouseStockEn || ''} onChange={e => setEditingProduct({ ...editingProduct, WarehouseStockEn: Number(e.target.value) })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Material" value={editingProduct.MaterialEn as string || ''} onChange={e => setEditingProduct({ ...editingProduct, MaterialEn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Color" value={editingProduct.ColorEn || ''} onChange={e => setEditingProduct({ ...editingProduct, ColorEn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Size" value={editingProduct.SizeEn || ''} onChange={e => setEditingProduct({ ...editingProduct, SizeEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Material" value={(editingProduct.MaterialEn as string) || ''} onChange={e => setEditingProduct({ ...editingProduct, MaterialEn: e.target.value })} sx={{ mb: 2 }} />
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel id="colors-en-label">Colors</InputLabel>
+                  <Select
+                    labelId="colors-en-label"
+                    multiple
+                    value={selectedColorsEn}
+                    onChange={(e) =>
+                      setSelectedColorsEn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
+                    }
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = colorsEn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
+                        })
+                        .join(', ')
+                    }
+                  >
+                    {colorsEn.map(color => (
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Button variant="outlined" onClick={() => openColorModalFn('en')} sx={{ mt: 1 }}>
+                    Manage Colors
+                  </Button>
+                </FormControl>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel id="sizes-en-label">Sizes</InputLabel>
+                  <Select
+                    labelId="sizes-en-label"
+                    multiple
+                    value={selectedSizesEn}
+                    onChange={(e) =>
+                      setSelectedSizesEn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
+                    }
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = size2En.find(s => s.SizeId === id)
+                          return found ? found.Size : id
+                        })
+                        .join(', ')
+                    }
+                  >
+                    {size2En.map(size => (
+                      <MenuItem key={size.SizeId} value={size.SizeId}>
+                        {size.Size}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Button variant="outlined" onClick={() => openSize2ModalFn('en')} sx={{ mt: 1 }}>
+                    Manage Sizes
+                  </Button>
+                </FormControl>
               </>
             )}
           </DialogContent>
@@ -1088,9 +1290,71 @@ const Product = () => {
                 <TextField fullWidth label="Stock Quantity" type="number" value={editingProductMn.StockQuantity || ''} onChange={e => setEditingProductMn({ ...editingProductMn, StockQuantity: Number(e.target.value) })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Retail Price" value={editingProductMn.RetailPriceMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, RetailPriceMn: e.target.value })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Warehouse Stock" type="number" value={editingProductMn.WarehouseStockMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, WarehouseStockMn: Number(e.target.value) })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Material" value={editingProductMn.MaterialMn as string || ''} onChange={e => setEditingProductMn({ ...editingProductMn, MaterialMn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Color" value={editingProductMn.ColorMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, ColorMn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Size" value={editingProductMn.SizeMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, SizeMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField fullWidth label="Material" value={(editingProductMn.MaterialMn as string) || ''} onChange={e => setEditingProductMn({ ...editingProductMn, MaterialMn: e.target.value })} sx={{ mb: 2 }} />
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel id="colors-mn-label">Colors</InputLabel>
+                  <Select
+                    labelId="colors-mn-label"
+                    multiple
+                    value={selectedColorsMn}
+                    onChange={(e) =>
+                      setSelectedColorsMn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
+                    }
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = colorsMn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
+                        })
+                        .join(', ')
+                    }
+                  >
+                    {colorsMn.map(color => (
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Button variant="outlined" onClick={() => openColorModalFn('en')} sx={{ mt: 1 }}>
+                    Manage Colors
+                  </Button>
+                </FormControl>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel id="sizes-mn-label">Sizes</InputLabel>
+                  <Select
+                    labelId="sizes-mn-label"
+                    multiple
+                    value={selectedSizesMn}
+                    onChange={(e) =>
+                      setSelectedSizesMn(
+                        typeof e.target.value === 'string'
+                          ? e.target.value.split(',').map(Number)
+                          : (e.target.value as number[])
+                      )
+                    }
+                    renderValue={selected =>
+                      (selected as number[])
+                        .map(id => {
+                          const found = size2Mn.find(s => s.SizeId === id)
+                          return found ? found.Size : id
+                        })
+                        .join(', ')
+                    }
+                  >
+                    {size2Mn.map(size => (
+                      <MenuItem key={size.SizeId} value={size.SizeId}>
+                        {size.Size}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Button variant="outlined" onClick={() => openSize2ModalFn('en')} sx={{ mt: 1 }}>
+                    Manage Sizes
+                  </Button>
+                </FormControl>
               </>
             )}
           </DialogContent>
@@ -1138,15 +1402,10 @@ const Product = () => {
         </Dialog>
 
         {/* ===== Snackbar ===== */}
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={3000}
-          onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
+        <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
           <MuiAlert severity={snackbarSeverity}>{snackbarMessage}</MuiAlert>
         </Snackbar>
-      </Box >
+      </Box>
 
       {/* ===== Color Management Modal ===== */}
       <Dialog open={colorModalOpen} onClose={() => setColorModalOpen(false)}>
@@ -1166,14 +1425,14 @@ const Product = () => {
           </Button>
           <Box mt={2}>
             <Typography variant="subtitle1">Available Colors:</Typography>
-            {(currentLangForColor === 'en' ? colorsEn : colorsMn).map((item) => (
-              <Box key={item.id} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
-                <Typography variant="body2">Color: {item.colorName}</Typography>
+            {(currentLangForColor === 'en' ? colorsEn : colorsMn).map(item => (
+              <Box key={item.ColorId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+                <Typography variant="body2">Color: {item.Color}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditColor(item)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteColor(item.id)}>
+                  <IconButton size="small" onClick={() => handleDeleteColor(item.ColorId)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -1204,14 +1463,14 @@ const Product = () => {
           </Button>
           <Box mt={2}>
             <Typography variant="subtitle1">Available Sizes:</Typography>
-            {(currentLangForSize2 === 'en' ? size2En : size2Mn).map((item) => (
-              <Box key={item.id} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
-                <Typography variant="body2">Size: {item.sizeName}</Typography>
+            {(currentLangForSize2 === 'en' ? size2En : size2Mn).map(item => (
+              <Box key={item.SizeId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+                <Typography variant="body2">Size: {item.Size}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditSize2(item)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteSize2(item.id)}>
+                  <IconButton size="small" onClick={() => handleDeleteSize2(item.SizeId)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -1223,7 +1482,6 @@ const Product = () => {
           <Button onClick={() => setSize2ModalOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-
     </>
   )
 }
