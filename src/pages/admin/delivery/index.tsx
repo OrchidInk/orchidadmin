@@ -8,8 +8,8 @@ const Delivery = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // axios.get("https://api.orchid.mn/api/v1/superadmin/delivery/list")
-        axios.get("http://localhost:9000/api/v1/superadmin/delivery/list")
+        axios.get("https://api.orchid.mn/api/v1/superadmin/delivery/list")
+            // axios.get("http://localhost:9000/api/v1/superadmin/delivery/list")
             .then(({ data }) => setDeliveries(data))
             .catch((error) => setError("Failed to fetch deliveries: " + error.message));
     }, []);

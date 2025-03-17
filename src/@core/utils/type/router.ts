@@ -23,7 +23,7 @@ export const adminAdminsList = "/admin/admins/list"
 export const adminDelivery = '/admin/delivery'
 // BASEURK
 // export const BASEURL = "https://api.orchid.mn"
-export const BASEURL = "http://localhost:9000"
+export const BASEURL = "https://api.orchid.mn"
 // Api
 export const adminAdminAdd = "/admin/admins/add"
 export const adminAdminList = ""
