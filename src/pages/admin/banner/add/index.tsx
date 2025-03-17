@@ -31,8 +31,8 @@ const BannerAdd = () => {
 
     const fetchBanners = async () => {
         try {
-            // const { data } = await axios.get("https://api.orchid.mn/api/v1/superadmin/banner/list");
-            const { data } = await axios.get("http://localhost:9000/api/v1/superadmin/banner/list");
+            const { data } = await axios.get("https://api.orchid.mn/api/v1/superadmin/banner/list");
+            // const { data } = await axios.get("http://localhost:9000/api/v1/superadmin/banner/list");
             setBanners(data);
         } catch (error) {
             alert("Error fetching banners: " + error);
