@@ -2,6 +2,8 @@ import axios, { AxiosError } from 'axios';
 
 const BASE_URL = 'https://api.orchid.mn/api/v1/superadmin/subCategory';
 const BASE_URLs = 'https://api.orchid.mn/api/v1/superadmin/category';
+// const BASE_URL = 'http://localhost:9000/api/v1/superadmin/subCategory';
+// const BASE_URLs = 'http://localhost:9000/api/v1/superadmin/category';
 
 const getToken = () => {
     if (typeof window !== 'undefined') {
@@ -143,13 +145,13 @@ export const fetchSubCategoriesMn = async () => {
 };
 
 export const deleteSubCategoryEn = async (id: number) => {
-  try {
-    await axios.delete(`${BASE_URL}/deleteEn/${id}`);
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to delete English subcategory:', error);
-    throw error;
-  }
+    try {
+        await axios.delete(`${BASE_URL}/deleteEn/${id}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to delete English subcategory:', error);
+        throw error;
+    }
 };
 
 /**
@@ -157,31 +159,31 @@ export const deleteSubCategoryEn = async (id: number) => {
  * @param subCategoryId - ID of the subcategory to delete
  */
 export const deleteSubCategoryMn = async (subCategoryId: number) => {
-  try {
-    await axios.delete(`${BASE_URL}/deleteMn/${subCategoryId}`);
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to delete Mongolian subcategory:', error);
-    throw error;
-  }
+    try {
+        await axios.delete(`${BASE_URL}/deleteMn/${subCategoryId}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to delete Mongolian subcategory:', error);
+        throw error;
+    }
 };
 
 export const updateSubCategoryEn = async (id: number, subCategoryNameEn: string) => {
-  if (!id) {
-    console.error("updateSubCategoryEn was called with an undefined ID!");
-    throw new Error("SubCategory ID is required.");
-  }
+    if (!id) {
+        console.error("updateSubCategoryEn was called with an undefined ID!");
+        throw new Error("SubCategory ID is required.");
+    }
 
-  try {
-    console.log(`Updating English subcategory with ID: ${id}`); // Debugging
-    const response = await axios.patch(`${BASE_URL}/updateEn/${id}`, {
-      subCategoryNameEn,
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Failed to update English subcategory:', error);
-    throw error;
-  }
+    try {
+        console.log(`Updating English subcategory with ID: ${id}`); // Debugging
+        const response = await axios.patch(`${BASE_URL}/updateEn/${id}`, {
+            subCategoryNameEn,
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Failed to update English subcategory:', error);
+        throw error;
+    }
 };
 
 
@@ -192,20 +194,20 @@ export const updateSubCategoryEn = async (id: number, subCategoryNameEn: string)
  * @param subCategoryNameMn - New subcategory name in Mongolian
  */
 export const updateSubCategoryMn = async (id: number | undefined, subCategoryNameMn: string) => {
-  if (!id) {
-    console.error("updateSubCategoryMn was called with an undefined ID!");
-    throw new Error("SubCategory ID is required.");
-  }
+    if (!id) {
+        console.error("updateSubCategoryMn was called with an undefined ID!");
+        throw new Error("SubCategory ID is required.");
+    }
 
-  try {
-    console.log(`Updating Mongolian subcategory with ID: ${id}`); // Debugging
-    const response = await axios.patch(`${BASE_URL}/updateMn/${id}`, {
-      subCategoryNameMn, // Removed `id` from body to prevent conflicts
-    });
+    try {
+        console.log(`Updating Mongolian subcategory with ID: ${id}`); // Debugging
+        const response = await axios.patch(`${BASE_URL}/updateMn/${id}`, {
+            subCategoryNameMn, // Removed `id` from body to prevent conflicts
+        });
 
-    return response.data;
-  } catch (error) {
-    console.error("Failed to update Mongolian subcategory:", error);
-    throw error;
-  }
+        return response.data;
+    } catch (error) {
+        console.error("Failed to update Mongolian subcategory:", error);
+        throw error;
+    }
 };

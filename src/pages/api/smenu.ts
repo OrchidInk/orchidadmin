@@ -3,6 +3,8 @@ import axios, { AxiosError } from 'axios';
 const BASE_URL = 'https://api.orchid.mn/api/v1/superadmin/sCategory';
 const BASE_URLs = 'https://api.orchid.mn/api/v1/superadmin/subCategory';
 
+// const BASE_URL = 'http://localhost:9000/api/v1/superadmin/sCategory';
+// const BASE_URLs = 'http://localhost:9000/api/v1/superadmin/subCategory';
 const getToken = () => {
     if (typeof window !== 'undefined') {
         return localStorage.getItem('token');
