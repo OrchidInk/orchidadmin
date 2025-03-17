@@ -2,8 +2,8 @@ import axios from "axios";
 
 // Create an Axios instance
 const api = axios.create({
-  // baseURL: "https://api.orchid.mn/api/v1/superadmin", // Base URL for your API
-  baseURL: "http://localhost:9000/api/v1/superadmin",
+  baseURL: "https://api.orchid.mn/api/v1/superadmin", // Base URL for your API
+  // baseURL: "http://localhost:9000/api/v1/superadmin",
   timeout: 10000, // Timeout for API requests
   headers: {
     "Content-Type": "application/json",
