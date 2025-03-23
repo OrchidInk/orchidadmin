@@ -25,6 +25,7 @@ import {
   TableBody,
   Avatar,
   IconButton,
+  CircularProgress
 } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 import EditIcon from '@mui/icons-material/Edit'
@@ -45,20 +46,19 @@ interface ProductEn {
   SCategoryIdEn: number | null
   PriceEn: string | null
   StockQuantity: number | null
-  ImagesPathEn: string | null
+  ImagesPath: string[]
   DescriptionEn: string | null
   BrandEn: string | null
   ManufacturedCountryEn: string | null
-  ColorEn: string | null // legacy comma-separated string (if needed)
-  SizeEn: string | null  // legacy comma-separated string (if needed)
+  ColorEn: string | null
+  SizeEn: string | null
   ProductCodeEn: string | null
   RetailPriceEn: string | null
   WarehouseStockEn: number | null
   CreatedAt: { Time: string } | null
-  // Extra fields from an enhanced query:
   ColorNames: string | null
   SizeNames: string | null
-  colorId: number[]    // new property: array of color IDs
+  colorId: number[]
   sizeId: number[]
 }
 
@@ -71,35 +71,35 @@ interface ProductMn {
   SCategoryIdMn: number | null
   PriceMn: string | null
   StockQuantity: number | null
-  ImagesPathMn: string | null
+  ImagesPathMn: string[]
   DescriptionMn: string | null
   BrandMn: string | null
   ManufacturedCountryMn: string | null
-  ColorMn: string | null // legacy comma-separated string (if needed)
-  SizeMn: string | null  // legacy comma-separated string (if needed)
+  ColorMn: string | null
+  SizeMn: string | null
   ProductCodeMn: string | null
   RetailPriceMn: string | null
   WarehouseStockMn: number | null
   CreatedAt: { Time: string } | null
-
-  colorId: number[]     // new property: array of color IDs
+  colorId: number[]
   sizeId: number[]
   ColorNames: string | null
   SizeNames: string | null
 }
 
+// Update interfaces for colors and sizes using lower‑camelCase keys
 interface ColorItem {
   id: number
   colorName: string
-  ColorId: number
-  Color: string
+  colorId: number
+  color: string
 }
 
 interface Size2Item {
   id: number
   sizeName: string
-  SizeId: number
-  Size: string
+  sizeId: number
+  size: string
 }
 
 // A union type for the shared properties needed in our detail modals.
@@ -136,11 +136,10 @@ const Product = () => {
   const [sCategoryEnId, setSCategoryEnId] = useState<number | null>(null)
   const [priceEn, setPriceEn] = useState('')
   const [stockQuantity, setStockQuantity] = useState<number | null>(null)
-  const [imagesPathEn, setImagesPathEn] = useState<string>('')
+  const [imagesPathEn, setImagesPathEn] = useState<string[]>([])
   const [descriptionEn, setDescriptionEn] = useState('')
   const [brandEn, setBrandEn] = useState('')
   const [manufacturedCountryEn, setManufacturedCountryEn] = useState('')
-  // For English, use numeric arrays (IDs)
   const [selectedColorsEn, setSelectedColorsEn] = useState<number[]>([])
   const [selectedSizesEn, setSelectedSizesEn] = useState<number[]>([])
   const [penOutEn, setPenOutEn] = useState('')
@@ -160,11 +159,10 @@ const Product = () => {
   const [productNameMn, setProductNameMn] = useState('')
   const [sCategoryMnId, setSCategoryMnId] = useState<number | null>(null)
   const [priceMn, setPriceMn] = useState('')
-  const [imagesPathMn, setImagesPathMn] = useState<string>('')
+  const [imagesPathMn, setImagesPathMn] = useState<string[]>([])
   const [descriptionMn, setDescriptionMn] = useState('')
   const [brandMn, setBrandMn] = useState('')
   const [manufacturedCountryMn, setManufacturedCountryMn] = useState('')
-  // For Mongolian, use separate numeric arrays (IDs)
   const [selectedColorsMn, setSelectedColorsMn] = useState<number[]>([])
   const [selectedSizesMn, setSelectedSizesMn] = useState<number[]>([])
   const [penOutMn, setPenOutMn] = useState('')
@@ -186,7 +184,7 @@ const Product = () => {
   const [productsEn, setProductsEn] = useState<ProductEn[]>([])
   const [productsMn, setProductsMn] = useState<ProductMn[]>([])
 
-  // Product modals (for add and update)
+  // Product modals
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [addModalMnOpen, setAddModalMnOpen] = useState(false)
   const [updateModalOpen, setUpdateModalOpen] = useState(false)
@@ -220,6 +218,10 @@ const Product = () => {
   const [openSizeDetailModal, setOpenSizeDetailModal] = useState(false)
   const [sizeDetails, setSizeDetails] = useState<string[]>([])
 
+  // ===== Additional State for Image Uploading Indicator =====
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
+
+  // ===== Fetch Functions =====
   const fetchCategoriesEn = async () => {
     try {
       const response = await api.get('/sCategory/listEn')
@@ -252,11 +254,6 @@ const Product = () => {
     }
   }
 
-  useEffect(() => {
-    // Run both GET requests concurrently
-    Promise.all([fetchCategoriesEn(), fetchCategoriesMn()])
-  }, [])
-
   const fetchProductsEn = async () => {
     try {
       const response = await api.get<ProductEn[]>('/product/listEn')
@@ -279,21 +276,35 @@ const Product = () => {
     }
   }
 
+  // Transform API data for colors into your expected interface
   const fetchColors = async () => {
     try {
       const response = await api.get('/color/list')
-      setColorsEn(response.data || [])
-      setColorsMn(response.data || [])
+      const transformed = (response.data || []).map((item: any) => ({
+        id: item.ColorId,
+        colorName: item.Color, // adjust if your API uses a different field
+        colorId: item.ColorId,
+        color: item.Color,
+      }))
+      setColorsEn(transformed)
+      setColorsMn(transformed)
     } catch (err) {
       console.error('Error fetching colors:', err)
     }
   }
 
+  // Transform API data for sizes into your expected interface
   const fetchSizes = async () => {
     try {
       const response = await api.get('/size/list')
-      setSize2En(response.data || [])
-      setSize2Mn(response.data || [])
+      const transformed = (response.data || []).map((item: any) => ({
+        id: item.SizeId,
+        sizeName: item.Size,
+        sizeId: item.SizeId,
+        size: item.Size,
+      }))
+      setSize2En(transformed)
+      setSize2Mn(transformed)
     } catch (err) {
       console.error('Error fetching sizes:', err)
     }
@@ -320,71 +331,90 @@ const Product = () => {
     setOpenSizeDetailModal(true)
   }
 
-  // ===== Image Upload Handler =====
+  // ===== Updated Image Upload Handler for Multiple Files =====
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, lang: 'en' | 'mn') => {
-    const file = event.target.files?.[0]
-    if (!file) {
-      alert('No file selected.')
-      return
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      alert('No file selected.');
+      return;
     }
-    if (!file.type.startsWith('image/')) {
-      alert('Selected file is not an image.')
-      return
-    }
-    const MAX_WIDTH = 800
-    const MAX_HEIGHT = 600
-    const QUALITY = 0.6
-    const objectUrl = URL.createObjectURL(file)
-    const img = new Image()
-    img.src = objectUrl
-    img.onload = () => {
-      let { width, height } = img
-      if (width > MAX_WIDTH) {
-        height = Math.round((MAX_WIDTH / width) * height)
-        width = MAX_WIDTH
-      }
-      if (height > MAX_HEIGHT) {
-        width = Math.round((MAX_HEIGHT / height) * width)
-        height = MAX_HEIGHT
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        alert('Canvas not supported.')
-        return
-      }
-      ctx.drawImage(img, 0, 0, width, height)
-      canvas.toBlob(
-        blob => {
-          if (!blob) {
-            alert('Image compression failed. Please try another image.')
-            return
+    setIsUploadingImages(true)
+    const MAX_WIDTH = 800;
+    const MAX_HEIGHT = 600;
+    const QUALITY = 0.6;
+
+    const processFile = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.src = objectUrl;
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > MAX_WIDTH) {
+            height = Math.round((MAX_WIDTH / width) * height);
+            width = MAX_WIDTH;
           }
-          if (blob.size > 5 * 1024 * 1024) {
-            alert('Compressed image is too large. Please choose a smaller image.')
-            return
+          if (height > MAX_HEIGHT) {
+            width = Math.round((MAX_HEIGHT / height) * width);
+            height = MAX_HEIGHT;
           }
-          const reader = new FileReader()
-          reader.onloadend = () => {
-            if (lang === 'en') {
-              setImagesPathEn(reader.result as string)
-            } else {
-              setImagesPathMn(reader.result as string)
-            }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject('Canvas not supported.');
+            return;
           }
-          reader.readAsDataURL(blob)
-        },
-        file.type,
-        QUALITY
-      )
-      URL.revokeObjectURL(objectUrl)
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            blob => {
+              if (!blob) {
+                reject('Image compression failed.');
+                return;
+              }
+              if (blob.size > 5 * 1024 * 1024) {
+                reject('Compressed image is too large.');
+                return;
+              }
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                resolve(reader.result as string);
+              };
+              reader.readAsDataURL(blob);
+            },
+            file.type,
+            QUALITY
+          );
+          URL.revokeObjectURL(objectUrl);
+        };
+        img.onerror = () => {
+          reject('Failed to load image.');
+          URL.revokeObjectURL(objectUrl);
+        };
+      });
+    };
+
+    const promises: Promise<string>[] = []
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file.type.startsWith('image/')) {
+        alert('Selected file is not an image.')
+        continue
+      }
+      promises.push(processFile(file))
     }
-    img.onerror = () => {
-      alert('Failed to load image.')
-      URL.revokeObjectURL(objectUrl)
+    try {
+      const results = await Promise.all(promises)
+      if (lang === 'en') {
+        setImagesPathEn(prev => [...prev, ...results])
+      } else {
+        setImagesPathMn(prev => [...prev, ...results])
+      }
+    } catch (error) {
+      alert(error)
     }
+    setIsUploadingImages(false)
   }
 
   // ===== Add Product Handlers =====
@@ -400,11 +430,8 @@ const Product = () => {
       ManufacturedCountryEn: manufacturedCountryEn,
       ColorEn: selectedColorsEn.join(','), // Legacy, optional
       SizeEn: selectedSizesEn.join(','),   // Legacy, optional
-
-      // **Fix this part:**
       ColorIds: selectedColorsEn,
       SizeIds: selectedSizesEn,
-
       PenOutEn: penOutEn,
       FeaturesEn: featuresEn,
       MaterialEn: materialEn,
@@ -447,11 +474,8 @@ const Product = () => {
       ManufacturedCountryMn: manufacturedCountryMn,
       ColorMn: selectedColorsMn.join(','),
       SizeMn: selectedSizesMn.join(','),
-
-      // **Fix this part:**
       ColorIds: selectedColorsMn,
       SizeIds: selectedSizesMn,
-
       PenOutMn: penOutMn,
       FeaturesMn: featuresMn,
       MaterialMn: materialMn,
@@ -555,7 +579,7 @@ const Product = () => {
     setSCategoryEnId(null)
     setPriceEn('')
     setStockQuantity(null)
-    setImagesPathEn('')
+    setImagesPathEn([])
     setDescriptionEn('')
     setBrandEn('')
     setManufacturedCountryEn('')
@@ -577,7 +601,7 @@ const Product = () => {
     setProductNameMn('')
     setSCategoryMnId(null)
     setPriceMn('')
-    setImagesPathMn('')
+    setImagesPathMn([])
     setDescriptionMn('')
     setBrandMn('')
     setManufacturedCountryMn('')
@@ -608,12 +632,12 @@ const Product = () => {
   const handleAddOrEditColor = async () => {
     try {
       if (editingColorId !== null) {
-        await api.patch(`/color/update/${editingColorId}`, { ColorId: editingColorId, Color: tempColor })
+        await api.patch(`/color/update/${editingColorId}`, { colorId: editingColorId, color: tempColor })
         if (currentLangForColor === 'en') {
           setColorsEn(prev =>
             prev.map(item =>
               item.id === editingColorId
-                ? { ...item, Color: tempColor, colorName: tempColor }
+                ? { ...item, color: tempColor, colorName: tempColor }
                 : item
             )
           )
@@ -621,18 +645,18 @@ const Product = () => {
           setColorsMn(prev =>
             prev.map(item =>
               item.id === editingColorId
-                ? { ...item, Color: tempColor, colorName: tempColor }
+                ? { ...item, color: tempColor, colorName: tempColor }
                 : item
             )
           )
         }
       } else {
         const response = await api.post('/color/create', { colorName: tempColor })
-        const { ColorId, Color } = response.data
+        const { colorId, color } = response.data
         if (currentLangForColor === 'en') {
-          setColorsEn(prev => [...prev, { id: ColorId, colorName: Color, ColorId, Color }])
+          setColorsEn(prev => [...prev, { id: colorId, colorName: color, colorId, color }])
         } else {
-          setColorsMn(prev => [...prev, { id: ColorId, colorName: Color, ColorId, Color }])
+          setColorsMn(prev => [...prev, { id: colorId, colorName: color, colorId, color }])
         }
       }
       setSnackbarMessage('Color saved successfully!')
@@ -650,16 +674,16 @@ const Product = () => {
 
   const handleEditColor = (item: ColorItem) => {
     setEditingColorId(item.id)
-    setTempColor(item.Color)
+    setTempColor(item.color)
   }
 
   const handleDeleteColor = async (id: number) => {
     try {
       await api.delete(`/color/delete/${id}`)
       if (currentLangForColor === 'en') {
-        setColorsEn(prev => prev.filter(item => item.ColorId !== id))
+        setColorsEn(prev => prev.filter(item => item.colorId !== id))
       } else {
-        setColorsMn(prev => prev.filter(item => item.ColorId !== id))
+        setColorsMn(prev => prev.filter(item => item.colorId !== id))
       }
       setSnackbarMessage('Color deleted successfully!')
       setSnackbarSeverity('success')
@@ -683,7 +707,7 @@ const Product = () => {
   const handleAddOrEditSize2 = async () => {
     try {
       if (editingSize2Id !== null) {
-        await api.patch(`/size/update/${editingSize2Id}`, { SizeId: editingSize2Id, Size: tempSize2 })
+        await api.patch(`/size/update/${editingSize2Id}`, { sizeId: editingSize2Id, size: tempSize2 })
         if (currentLangForSize2 === 'en') {
           setSize2En(prev =>
             prev.map(item =>
@@ -699,11 +723,11 @@ const Product = () => {
         }
       } else {
         const response = await api.post('/size/create', { sizeName: tempSize2 })
-        const { SizeId, Size } = response.data
+        const { sizeId, size } = response.data
         if (currentLangForSize2 === 'en') {
-          setSize2En(prev => [...prev, { id: SizeId, sizeName: Size, SizeId, Size }])
+          setSize2En(prev => [...prev, { id: sizeId, sizeName: size, sizeId, size }])
         } else {
-          setSize2Mn(prev => [...prev, { id: SizeId, sizeName: Size, SizeId, Size }])
+          setSize2Mn(prev => [...prev, { id: sizeId, sizeName: size, sizeId, size }])
         }
       }
       setSnackbarMessage('Size saved successfully!')
@@ -720,8 +744,8 @@ const Product = () => {
   }
 
   const handleEditSize2 = (item: Size2Item) => {
-    setEditingSize2Id(item.SizeId)
-    setTempSize2(item.Size)
+    setEditingSize2Id(item.sizeId)
+    setTempSize2(item.size)
   }
 
   const handleDeleteSize2 = async (id: number) => {
@@ -797,12 +821,23 @@ const Product = () => {
                 productsEn.map(product => (
                   <TableRow key={product.ProductEnID}>
                     <TableCell>
-                      <Avatar
-                        src={product.ImagesPathEn || '/placeholder.jpg'}
-                        alt={displayValue(product.ProductNameEn)}
-                        sx={{ width: 50, height: 50 }}
-                      />
+                      {product.ImagesPath && product.ImagesPath.length > 0 ? (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          {product.ImagesPath.map((img, idx) => (
+                            <Avatar
+                              key={idx}
+                              src={img}
+                              alt={`${displayValue(product.ProductNameEn)} image ${idx + 1}`}
+                              sx={{ width: 50, height: 50 }}
+                            />
+                          ))}
+                        </Box>
+                      ) : (
+                        <Avatar src="/placeholder.jpg" alt={displayValue(product.ProductNameEn)} sx={{ width: 50, height: 50 }} />
+                      )}
                     </TableCell>
+
+
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameEn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandEn)}</TableCell>
                     <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdEn)}</TableCell>
@@ -888,7 +923,7 @@ const Product = () => {
                   <TableRow key={product.ProductMnID}>
                     <TableCell>
                       <Avatar
-                        src={product.ImagesPathMn || '/placeholder.jpg'}
+                        src={product.ImagesPathMn && product.ImagesPathMn.length > 0 ? product.ImagesPathMn[0] : '/placeholder.jpg'}
                         alt={displayValue(product.ProductNameMn)}
                         sx={{ width: 50, height: 50 }}
                       />
@@ -970,8 +1005,23 @@ const Product = () => {
                 <TextField fullWidth label="Price" value={priceEn} onChange={e => setPriceEn(e.target.value)} />
                 <TextField fullWidth label="Stock Quantity" type="number" value={stockQuantity || ''} onChange={e => setStockQuantity(Number(e.target.value))} />
                 <Box sx={{ mt: 2 }}>
-                  <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'en')} />
+                  <input type="file" accept="image/*" multiple onChange={e => handleImageUpload(e, 'en')} />
                 </Box>
+                {isUploadingImages && (
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                    <CircularProgress size={24} />
+                    <Typography sx={{ ml: 1 }}>Uploading images...</Typography>
+                  </Box>
+                )}
+                {imagesPathEn.length > 0 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
+                    {imagesPathEn.map((img, idx) => (
+                      <Box key={idx} sx={{ mr: 1, mb: 1 }}>
+                        <img src={img} alt={`Upload ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                )}
                 <TextField fullWidth label="Description" value={descriptionEn} onChange={e => setDescriptionEn(e.target.value)} />
                 <TextField fullWidth label="Brand" value={brandEn} onChange={e => setBrandEn(e.target.value)} />
                 <TextField fullWidth label="Manufactured Country" value={manufacturedCountryEn} onChange={e => setManufacturedCountryEn(e.target.value)} />
@@ -995,15 +1045,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsEn.find(c => c.ColorId === id)
-                          return found ? found.Color : id
+                          const found = colorsEn.find(c => c.colorId === id)
+                          return found ? found.color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsEn.map(color => (
-                      <MenuItem key={color.ColorId} value={color.ColorId}>
-                        {color.Color}
+                      <MenuItem key={color.colorId} value={color.colorId}>
+                        {color.color}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1027,15 +1077,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = size2En.find(s => s.SizeId === id)
-                          return found ? found.Size : id
+                          const found = size2En.find(s => s.sizeId === id)
+                          return found ? found.size : id
                         })
                         .join(', ')
                     }
                   >
                     {size2En.map(size => (
-                      <MenuItem key={size.SizeId} value={size.SizeId}>
-                        {size.Size}
+                      <MenuItem key={size.sizeId} value={size.sizeId}>
+                        {size.size}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1083,8 +1133,23 @@ const Product = () => {
                 <TextField fullWidth label="Price" value={priceMn} onChange={e => setPriceMn(e.target.value)} />
                 <TextField fullWidth label="Stock Quantity" type="number" value={stockQuantity || ''} onChange={e => setStockQuantity(Number(e.target.value))} />
                 <Box sx={{ mt: 2 }}>
-                  <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'mn')} />
+                  <input type="file" accept="image/*" multiple onChange={e => handleImageUpload(e, 'mn')} />
                 </Box>
+                {isUploadingImages && (
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                    <CircularProgress size={24} />
+                    <Typography sx={{ ml: 1 }}>Uploading images...</Typography>
+                  </Box>
+                )}
+                {imagesPathMn.length > 0 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
+                    {imagesPathMn.map((img, idx) => (
+                      <Box key={idx} sx={{ mr: 1, mb: 1 }}>
+                        <img src={img} alt={`Upload ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                )}
                 <TextField fullWidth label="Description" value={descriptionMn} onChange={e => setDescriptionMn(e.target.value)} />
                 <TextField fullWidth label="Brand" value={brandMn} onChange={e => setBrandMn(e.target.value)} />
                 <TextField fullWidth label="Manufactured Country" value={manufacturedCountryMn} onChange={e => setManufacturedCountryMn(e.target.value)} />
@@ -1107,19 +1172,20 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsMn.find(c => c.ColorId === id)
-                          return found ? found.Color : id
+                          const found = colorsMn.find(c => c.colorId === id)
+                          return found ? found.color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsMn.map(color => (
-                      <MenuItem key={color.ColorId} value={color.ColorId}>
-                        {color.Color}
+                      <MenuItem key={color.colorId} value={color.colorId}>
+                        {color.color}
                       </MenuItem>
                     ))}
                   </Select>
-                  <Button variant="outlined" onClick={() => openColorModalFn('en')} sx={{ mt: 1 }}>
+                  {/* Use 'mn' for Mongolian product modals */}
+                  <Button variant="outlined" onClick={() => openColorModalFn('mn')} sx={{ mt: 1 }}>
                     Manage Colors
                   </Button>
                 </FormControl>
@@ -1139,19 +1205,20 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = size2Mn.find(s => s.SizeId === id)
-                          return found ? found.Size : id
+                          const found = size2Mn.find(s => s.sizeId === id)
+                          return found ? found.size : id
                         })
                         .join(', ')
                     }
                   >
                     {size2Mn.map(size => (
-                      <MenuItem key={size.SizeId} value={size.SizeId}>
-                        {size.Size}
+                      <MenuItem key={size.sizeId} value={size.sizeId}>
+                        {size.size}
                       </MenuItem>
                     ))}
                   </Select>
-                  <Button variant="outlined" onClick={() => openSize2ModalFn('en')} sx={{ mt: 1 }}>
+                  {/* Use 'mn' for Mongolian product modals */}
+                  <Button variant="outlined" onClick={() => openSize2ModalFn('mn')} sx={{ mt: 1 }}>
                     Manage Sizes
                   </Button>
                 </FormControl>
@@ -1161,7 +1228,7 @@ const Product = () => {
                 <TextField fullWidth label="Staple Size" value={stapleSizeMn} onChange={e => setStapleSizeMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Capacity" value={capacityMn} onChange={e => setCapacityMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Weight" value={weightMn} onChange={e => setWeightMn(e.target.value)} sx={{ mt: 2 }} />
-                <TextField fullWidth label="Thickness" value={thicknessMn} onChange={e => setThinknessMn(e.target.value)} sx={{ mt: 2 }} />
+                <TextField fullWidth label="Thickness" value={thicknessMn} onChange={e => setThinknessEn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Packaging" value={packagingMn} onChange={e => setPackagingMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Product Code" value={productCodeMn} onChange={e => setProductCodeMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Cost Price" value={costPriceMn} onChange={e => setCostPriceMn(e.target.value)} sx={{ mt: 2 }} />
@@ -1185,12 +1252,28 @@ const Product = () => {
             {editingProduct && (
               <>
                 <Box display="flex" justifyContent="center">
-                  <Avatar src={editingProduct.ImagesPathEn || '/placeholder.jpg'} sx={{ width: 80, height: 80, mb: 2 }} />
+                  <Avatar
+                    src={
+                      editingProduct.ImagesPath && editingProduct.ImagesPath.length > 0
+                        ? editingProduct.ImagesPath[0]
+                        : '/placeholder.jpg'
+                    }
+                    sx={{ width: 80, height: 80, mb: 2 }}
+                  />
                 </Box>
                 <Button variant="contained" component="label" sx={{ mb: 2 }}>
                   Upload Image
-                  <input type="file" hidden accept="image/*" onChange={e => handleImageUpload(e, 'en')} />
+                  <input type="file" hidden accept="image/*" multiple onChange={e => handleImageUpload(e, 'en')} />
                 </Button>
+                {editingProduct.ImagesPath && editingProduct.ImagesPath.length > 1 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
+                    {editingProduct.ImagesPath.map((img, idx) => (
+                      <Box key={idx} sx={{ mr: 1, mb: 1 }}>
+                        <img src={img} alt={`Update ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                )}
                 <TextField fullWidth label="Product Name" value={editingProduct.ProductNameEn || ''} onChange={e => setEditingProduct({ ...editingProduct, ProductNameEn: e.target.value })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Brand" value={editingProduct.BrandEn || ''} onChange={e => setEditingProduct({ ...editingProduct, BrandEn: e.target.value })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Price" value={editingProduct.PriceEn || ''} onChange={e => setEditingProduct({ ...editingProduct, PriceEn: e.target.value })} sx={{ mb: 2 }} />
@@ -1214,52 +1297,20 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsEn.find(c => c.ColorId === id)
-                          return found ? found.Color : id
+                          const found = colorsEn.find(c => c.colorId === id)
+                          return found ? found.color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsEn.map(color => (
-                      <MenuItem key={color.ColorId} value={color.ColorId}>
-                        {color.Color}
+                      <MenuItem key={color.colorId} value={color.colorId}>
+                        {color.color}
                       </MenuItem>
                     ))}
                   </Select>
                   <Button variant="outlined" onClick={() => openColorModalFn('en')} sx={{ mt: 1 }}>
                     Manage Colors
-                  </Button>
-                </FormControl>
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel id="sizes-en-label">Sizes</InputLabel>
-                  <Select
-                    labelId="sizes-en-label"
-                    multiple
-                    value={selectedSizesEn}
-                    onChange={(e) =>
-                      setSelectedSizesEn(
-                        typeof e.target.value === 'string'
-                          ? e.target.value.split(',').map(Number)
-                          : (e.target.value as number[])
-                      )
-                    }
-                    renderValue={selected =>
-                      (selected as number[])
-                        .map(id => {
-                          const found = size2En.find(s => s.SizeId === id)
-                          return found ? found.Size : id
-                        })
-                        .join(', ')
-                    }
-                  >
-                    {size2En.map(size => (
-                      <MenuItem key={size.SizeId} value={size.SizeId}>
-                        {size.Size}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <Button variant="outlined" onClick={() => openSize2ModalFn('en')} sx={{ mt: 1 }}>
-                    Manage Sizes
                   </Button>
                 </FormControl>
               </>
@@ -1278,12 +1329,28 @@ const Product = () => {
             {editingProductMn && (
               <>
                 <Box display="flex" justifyContent="center">
-                  <Avatar src={editingProductMn.ImagesPathMn || '/placeholder.jpg'} sx={{ width: 80, height: 80, mb: 2 }} />
+                  <Avatar
+                    src={
+                      editingProductMn.ImagesPathMn && editingProductMn.ImagesPathMn.length > 0
+                        ? editingProductMn.ImagesPathMn[0]
+                        : '/placeholder.jpg'
+                    }
+                    sx={{ width: 80, height: 80, mb: 2 }}
+                  />
                 </Box>
                 <Button variant="contained" component="label" sx={{ mb: 2 }}>
                   Upload Image
-                  <input type="file" hidden accept="image/*" onChange={e => handleImageUpload(e, 'mn')} />
+                  <input type="file" hidden accept="image/*" multiple onChange={e => handleImageUpload(e, 'mn')} />
                 </Button>
+                {editingProductMn.ImagesPathMn && editingProductMn.ImagesPathMn.length > 0 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
+                    {editingProductMn.ImagesPathMn.map((img, idx) => (
+                      <Box key={idx} sx={{ mr: 1, mb: 1 }}>
+                        <img src={img} alt={`Update ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                )}
                 <TextField fullWidth label="Product Name" value={editingProductMn.ProductNameMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, ProductNameMn: e.target.value })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Brand" value={editingProductMn.BrandMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, BrandMn: e.target.value })} sx={{ mb: 2 }} />
                 <TextField fullWidth label="Price" value={editingProductMn.PriceMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, PriceMn: e.target.value })} sx={{ mb: 2 }} />
@@ -1307,52 +1374,21 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsMn.find(c => c.ColorId === id)
-                          return found ? found.Color : id
+                          const found = colorsMn.find(c => c.colorId === id)
+                          return found ? found.color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsMn.map(color => (
-                      <MenuItem key={color.ColorId} value={color.ColorId}>
-                        {color.Color}
+                      <MenuItem key={color.colorId} value={color.colorId}>
+                        {color.color}
                       </MenuItem>
                     ))}
                   </Select>
-                  <Button variant="outlined" onClick={() => openColorModalFn('en')} sx={{ mt: 1 }}>
+                  {/* In Mongolian update modal, use "mn" for managing colors */}
+                  <Button variant="outlined" onClick={() => openColorModalFn('mn')} sx={{ mt: 1 }}>
                     Manage Colors
-                  </Button>
-                </FormControl>
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel id="sizes-mn-label">Sizes</InputLabel>
-                  <Select
-                    labelId="sizes-mn-label"
-                    multiple
-                    value={selectedSizesMn}
-                    onChange={(e) =>
-                      setSelectedSizesMn(
-                        typeof e.target.value === 'string'
-                          ? e.target.value.split(',').map(Number)
-                          : (e.target.value as number[])
-                      )
-                    }
-                    renderValue={selected =>
-                      (selected as number[])
-                        .map(id => {
-                          const found = size2Mn.find(s => s.SizeId === id)
-                          return found ? found.Size : id
-                        })
-                        .join(', ')
-                    }
-                  >
-                    {size2Mn.map(size => (
-                      <MenuItem key={size.SizeId} value={size.SizeId}>
-                        {size.Size}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <Button variant="outlined" onClick={() => openSize2ModalFn('en')} sx={{ mt: 1 }}>
-                    Manage Sizes
                   </Button>
                 </FormControl>
               </>
@@ -1426,13 +1462,13 @@ const Product = () => {
           <Box mt={2}>
             <Typography variant="subtitle1">Available Colors:</Typography>
             {(currentLangForColor === 'en' ? colorsEn : colorsMn).map(item => (
-              <Box key={item.ColorId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
-                <Typography variant="body2">Color: {item.Color}</Typography>
+              <Box key={item.colorId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+                <Typography variant="body2">Color: {item.color}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditColor(item)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteColor(item.ColorId)}>
+                  <IconButton size="small" onClick={() => handleDeleteColor(item.colorId)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -1464,13 +1500,13 @@ const Product = () => {
           <Box mt={2}>
             <Typography variant="subtitle1">Available Sizes:</Typography>
             {(currentLangForSize2 === 'en' ? size2En : size2Mn).map(item => (
-              <Box key={item.SizeId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
-                <Typography variant="body2">Size: {item.Size}</Typography>
+              <Box key={item.sizeId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+                <Typography variant="body2">Size: {item.size}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditSize2(item)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteSize2(item.SizeId)}>
+                  <IconButton size="small" onClick={() => handleDeleteSize2(item.sizeId)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
