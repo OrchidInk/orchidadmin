@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react'
@@ -71,7 +72,7 @@ interface ProductMn {
   SCategoryIdMn: number | null
   PriceMn: string | null
   StockQuantity: number | null
-  ImagesPathMn: string[]
+  ImagesPath: string[]
   DescriptionMn: string | null
   BrandMn: string | null
   ManufacturedCountryMn: string | null
@@ -130,13 +131,37 @@ const displayValue = (value: string | number | null): string => {
   return value.toString()
 }
 
+// --- Helper to ensure images are returned as an array ---
+const getImagesArray = (images: any): string[] => {
+  if (Array.isArray(images)) {
+    return images
+  }
+  if (typeof images === "string") {
+    try {
+      const parsed = JSON.parse(images)
+      if (Array.isArray(parsed)) {
+        return parsed
+      }
+      // fallback: split by commas
+      return images.split(',').map((img: string) => img.trim()).filter((img: string) => img.length > 0)
+    } catch (error) {
+      // if not valid JSON, fallback to splitting
+      return images.split(',').map((img: string) => img.trim()).filter((img: string) => img.length > 0)
+    }
+  }
+  if (typeof images === "object" && images !== null) {
+    return Object.values(images).filter(val => typeof val === "string") as string[]
+  }
+  return []
+}
+
 const Product = () => {
   // ===== (1) English Product Form States =====
   const [productNameEn, setProductNameEn] = useState('')
   const [sCategoryEnId, setSCategoryEnId] = useState<number | null>(null)
   const [priceEn, setPriceEn] = useState('')
   const [stockQuantity, setStockQuantity] = useState<number | null>(null)
-  const [imagesPathEn, setImagesPathEn] = useState<string[]>([])
+  // const [imagesPath, setImagesPath] = useState<string[]>([])
   const [descriptionEn, setDescriptionEn] = useState('')
   const [brandEn, setBrandEn] = useState('')
   const [manufacturedCountryEn, setManufacturedCountryEn] = useState('')
@@ -159,7 +184,7 @@ const Product = () => {
   const [productNameMn, setProductNameMn] = useState('')
   const [sCategoryMnId, setSCategoryMnId] = useState<number | null>(null)
   const [priceMn, setPriceMn] = useState('')
-  const [imagesPathMn, setImagesPathMn] = useState<string[]>([])
+  const [imagesPath, setImagesPath] = useState<string[]>([])
   const [descriptionMn, setDescriptionMn] = useState('')
   const [brandMn, setBrandMn] = useState('')
   const [manufacturedCountryMn, setManufacturedCountryMn] = useState('')
@@ -276,13 +301,13 @@ const Product = () => {
     }
   }
 
-  // Transform API data for colors into your expected interface
+  // Transform API data for colors
   const fetchColors = async () => {
     try {
       const response = await api.get('/color/list')
       const transformed = (response.data || []).map((item: any) => ({
         id: item.ColorId,
-        colorName: item.Color, // adjust if your API uses a different field
+        colorName: item.Color,
         colorId: item.ColorId,
         color: item.Color,
       }))
@@ -293,7 +318,7 @@ const Product = () => {
     }
   }
 
-  // Transform API data for sizes into your expected interface
+  // Transform API data for sizes
   const fetchSizes = async () => {
     try {
       const response = await api.get('/size/list')
@@ -333,67 +358,67 @@ const Product = () => {
 
   // ===== Updated Image Upload Handler for Multiple Files =====
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, lang: 'en' | 'mn') => {
-    const files = event.target.files;
+    const files = event.target.files
     if (!files || files.length === 0) {
-      alert('No file selected.');
-      return;
+      alert('No file selected.')
+      return
     }
     setIsUploadingImages(true)
-    const MAX_WIDTH = 800;
-    const MAX_HEIGHT = 600;
-    const QUALITY = 0.6;
+    const MAX_WIDTH = 800
+    const MAX_HEIGHT = 600
+    const QUALITY = 0.6
 
     const processFile = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
-        const objectUrl = URL.createObjectURL(file);
-        const img = new Image();
-        img.src = objectUrl;
+        const objectUrl = URL.createObjectURL(file)
+        const img = new Image()
+        img.src = objectUrl
         img.onload = () => {
-          let { width, height } = img;
+          let { width, height } = img
           if (width > MAX_WIDTH) {
-            height = Math.round((MAX_WIDTH / width) * height);
-            width = MAX_WIDTH;
+            height = Math.round((MAX_WIDTH / width) * height)
+            width = MAX_WIDTH
           }
           if (height > MAX_HEIGHT) {
-            width = Math.round((MAX_HEIGHT / height) * width);
-            height = MAX_HEIGHT;
+            width = Math.round((MAX_HEIGHT / height) * width)
+            height = MAX_HEIGHT
           }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
           if (!ctx) {
-            reject('Canvas not supported.');
-            return;
+            reject('Canvas not supported.')
+            return
           }
-          ctx.drawImage(img, 0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height)
           canvas.toBlob(
             blob => {
               if (!blob) {
-                reject('Image compression failed.');
-                return;
+                reject('Image compression failed.')
+                return
               }
               if (blob.size > 5 * 1024 * 1024) {
-                reject('Compressed image is too large.');
-                return;
+                reject('Compressed image is too large.')
+                return
               }
-              const reader = new FileReader();
+              const reader = new FileReader()
               reader.onloadend = () => {
-                resolve(reader.result as string);
-              };
-              reader.readAsDataURL(blob);
+                resolve(reader.result as string)
+              }
+              reader.readAsDataURL(blob)
             },
             file.type,
             QUALITY
-          );
-          URL.revokeObjectURL(objectUrl);
-        };
+          )
+          URL.revokeObjectURL(objectUrl)
+        }
         img.onerror = () => {
-          reject('Failed to load image.');
-          URL.revokeObjectURL(objectUrl);
-        };
-      });
-    };
+          reject('Failed to load image.')
+          URL.revokeObjectURL(objectUrl)
+        }
+      })
+    }
 
     const promises: Promise<string>[] = []
     for (let i = 0; i < files.length; i++) {
@@ -407,9 +432,9 @@ const Product = () => {
     try {
       const results = await Promise.all(promises)
       if (lang === 'en') {
-        setImagesPathEn(prev => [...prev, ...results])
+        setImagesPath(prev => [...prev, ...results])
       } else {
-        setImagesPathMn(prev => [...prev, ...results])
+        setImagesPath(prev => [...prev, ...results])
       }
     } catch (error) {
       alert(error)
@@ -424,15 +449,15 @@ const Product = () => {
       SCategoryEnID: sCategoryEnId,
       PriceEn: parseFloat(priceEn || '0').toFixed(2),
       StockQuantity: stockQuantity,
-      ImagesPathEn: imagesPathEn,
+      ImagesPath: imagesPath,
       DescriptionEn: descriptionEn,
       BrandEn: brandEn,
       ManufacturedCountryEn: manufacturedCountryEn,
-      ColorEn: selectedColorsEn.join(','), // Legacy, optional
-      SizeEn: selectedSizesEn.join(','),   // Legacy, optional
+      ColorEn: selectedColorsEn.join(','),
+      SizeEn: selectedSizesEn.join(','),
       ColorIds: selectedColorsEn,
       SizeIds: selectedSizesEn,
-      PenOutEn: penOutEn,
+      PenOutputEn: penOutEn,
       FeaturesEn: featuresEn,
       MaterialEn: materialEn,
       StapleSizeEn: stapleSizeEn,
@@ -468,7 +493,7 @@ const Product = () => {
       SCategoryMnID: sCategoryMnId,
       PriceMn: parseFloat(priceMn || '0').toFixed(2),
       StockQuantity: stockQuantity,
-      ImagesPathMn: imagesPathMn,
+      ImagesPath: imagesPath,
       DescriptionMn: descriptionMn,
       BrandMn: brandMn,
       ManufacturedCountryMn: manufacturedCountryMn,
@@ -579,7 +604,7 @@ const Product = () => {
     setSCategoryEnId(null)
     setPriceEn('')
     setStockQuantity(null)
-    setImagesPathEn([])
+    setImagesPath([])
     setDescriptionEn('')
     setBrandEn('')
     setManufacturedCountryEn('')
@@ -601,7 +626,7 @@ const Product = () => {
     setProductNameMn('')
     setSCategoryMnId(null)
     setPriceMn('')
-    setImagesPathMn([])
+    setImagesPath([])
     setDescriptionMn('')
     setBrandMn('')
     setManufacturedCountryMn('')
@@ -818,70 +843,75 @@ const Product = () => {
             </TableHead>
             <TableBody>
               {productsEn.length > 0 ? (
-                productsEn.map(product => (
-                  <TableRow key={product.ProductEnID}>
-                    <TableCell>
-                      {product.ImagesPath && product.ImagesPath.length > 0 ? (
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          {product.ImagesPath.map((img, idx) => (
-                            <Avatar
-                              key={idx}
-                              src={img}
-                              alt={`${displayValue(product.ProductNameEn)} image ${idx + 1}`}
-                              sx={{ width: 50, height: 50 }}
-                            />
-                          ))}
-                        </Box>
-                      ) : (
-                        <Avatar src="/placeholder.jpg" alt={displayValue(product.ProductNameEn)} sx={{ width: 50, height: 50 }} />
-                      )}
-                    </TableCell>
-
-
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.PriceEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.ManufacturedCountryEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.StockQuantity)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.WarehouseStockEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.MaterialEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.RetailPriceEn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>
-                      <Button variant="outlined" size="small" onClick={() => handleShowColorDetails(product)}>
-                        View Colors
-                      </Button>
-                    </TableCell>
-                    <TableCell sx={{ color: '#fff' }}>
-                      <Button variant="outlined" size="small" onClick={() => handleShowSizeDetails(product)}>
-                        View Sizes
-                      </Button>
-                    </TableCell>
-                    <TableCell sx={{ color: '#fff' }}>
-                      {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
-                        onClick={() => {
-                          setEditingProduct(product)
-                          setUpdateModalOpen(true)
-                        }}
-                      >
-                        Update
-                      </Button>
-                      <Button
-                        variant="contained"
-                        sx={{ background: '#ff3333', color: '#fff' }}
-                        onClick={() => handleDeleteProductEn(product)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                productsEn.map((product) => {
+                  const imagesArr = getImagesArray(product.ImagesPath)
+                  return (
+                    <TableRow key={product.ProductEnID}>
+                      <TableCell>
+                        {imagesArr.length > 0 ? (
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            {imagesArr.map((img, idx) => (
+                              <Avatar
+                                key={idx}
+                                src={img}
+                                alt={`${displayValue(imagesArr[0])} image ${idx + 1}`}
+                                sx={{ width: 50, height: 50 }}
+                              />
+                            ))}
+                          </Box>
+                        ) : (
+                          <Avatar
+                            src="/placeholder.jpg"
+                            alt={displayValue(imagesArr[0])}
+                            sx={{ width: 50, height: 50 }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.PriceEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.ManufacturedCountryEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.StockQuantity)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.WarehouseStockEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.MaterialEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.RetailPriceEn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        <Button variant="outlined" size="small" onClick={() => handleShowColorDetails(product)}>
+                          View Colors
+                        </Button>
+                      </TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        <Button variant="outlined" size="small" onClick={() => handleShowSizeDetails(product)}>
+                          View Sizes
+                        </Button>
+                      </TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
+                          onClick={() => {
+                            setEditingProduct(product)
+                            setUpdateModalOpen(true)
+                          }}
+                        >
+                          Update
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{ background: '#ff3333', color: '#fff' }}
+                          onClick={() => handleDeleteProductEn(product)}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={14} align="center">
@@ -919,59 +949,70 @@ const Product = () => {
             </TableHead>
             <TableBody>
               {productsMn.length > 0 ? (
-                productsMn.map(product => (
-                  <TableRow key={product.ProductMnID}>
-                    <TableCell>
-                      <Avatar
-                        src={product.ImagesPathMn && product.ImagesPathMn.length > 0 ? product.ImagesPathMn[0] : '/placeholder.jpg'}
-                        alt={displayValue(product.ProductNameMn)}
-                        sx={{ width: 50, height: 50 }}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.PriceMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.ManufacturedCountryMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.StockQuantity)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.WarehouseStockMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>{displayValue(product.MaterialMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.RetailPriceMn)}</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>
-                      <Button variant="outlined" size="small" onClick={() => handleShowColorDetails(product)}>
-                        View Colors
-                      </Button>
-                    </TableCell>
-                    <TableCell sx={{ color: '#fff' }}>
-                      <Button variant="outlined" size="small" onClick={() => handleShowSizeDetails(product)}>
-                        View Sizes
-                      </Button>
-                    </TableCell>
-                    <TableCell sx={{ color: '#fff' }}>
-                      {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
-                        onClick={() => {
-                          setEditingProductMn(product)
-                          setUpdateModalMnOpen(true)
-                        }}
-                      >
-                        Update
-                      </Button>
-                      <Button
-                        variant="contained"
-                        sx={{ background: '#ff3333', color: '#fff' }}
-                        onClick={() => handleDeleteProductMn(product)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                productsMn.map(product => {
+                  const imagesArr = getImagesArray(product.ImagesPath)
+                  return (
+                    <TableRow key={product.ProductMnID}>
+                      <TableCell>
+                        {imagesArr.length > 0 ? (
+                          <Avatar
+                            src={imagesArr[0]}
+                            alt={displayValue(product.ProductNameMn)}
+                            sx={{ width: 50, height: 50 }}
+                          />
+                        ) : (
+                          <Avatar
+                            src="/placeholder.jpg"
+                            alt={displayValue(product.ProductNameMn)}
+                            sx={{ width: 50, height: 50 }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.ProductNameMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.BrandMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.SCategoryIdMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.PriceMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.ManufacturedCountryMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.StockQuantity)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.WarehouseStockMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>{displayValue(product.MaterialMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>₮{displayValue(product.RetailPriceMn)}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        <Button variant="outlined" size="small" onClick={() => handleShowColorDetails(product)}>
+                          View Colors
+                        </Button>
+                      </TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        <Button variant="outlined" size="small" onClick={() => handleShowSizeDetails(product)}>
+                          View Sizes
+                        </Button>
+                      </TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        {product.CreatedAt?.Time ? new Date(product.CreatedAt.Time).toLocaleString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          sx={{ backgroundColor: '#00ffba', color: '#0d0d0d', mr: 1 }}
+                          onClick={() => {
+                            setEditingProductMn(product)
+                            setUpdateModalMnOpen(true)
+                          }}
+                        >
+                          Update
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{ background: '#ff3333', color: '#fff' }}
+                          onClick={() => handleDeleteProductMn(product)}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={14} align="center">
@@ -987,8 +1028,8 @@ const Product = () => {
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>Add English Product</DialogTitle>
           <DialogContent>
+            {/* ... [Add English Product form remains the same] ... */}
             <Grid container spacing={2}>
-              {/* Left Column */}
               <Grid item xs={6}>
                 <Typography variant="h6">Product Details</Typography>
                 <TextField fullWidth label="Product Name" value={productNameEn} onChange={e => setProductNameEn(e.target.value)} />
@@ -1013,9 +1054,9 @@ const Product = () => {
                     <Typography sx={{ ml: 1 }}>Uploading images...</Typography>
                   </Box>
                 )}
-                {imagesPathEn.length > 0 && (
+                {imagesPath.length > 0 && (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
-                    {imagesPathEn.map((img, idx) => (
+                    {imagesPath.map((img, idx) => (
                       <Box key={idx} sx={{ mr: 1, mb: 1 }}>
                         <img src={img} alt={`Upload ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
                       </Box>
@@ -1118,6 +1159,7 @@ const Product = () => {
         <Dialog open={addModalMnOpen} onClose={() => setAddModalMnOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>Add Mongolian Product</DialogTitle>
           <DialogContent>
+            {/* ... [Add Mongolian Product form remains the same] ... */}
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Typography variant="h6">Product Details</Typography>
@@ -1141,9 +1183,9 @@ const Product = () => {
                     <Typography sx={{ ml: 1 }}>Uploading images...</Typography>
                   </Box>
                 )}
-                {imagesPathMn.length > 0 && (
+                {imagesPath.length > 0 && (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
-                    {imagesPathMn.map((img, idx) => (
+                    {imagesPath.map((img, idx) => (
                       <Box key={idx} sx={{ mr: 1, mb: 1 }}>
                         <img src={img} alt={`Upload ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
                       </Box>
@@ -1184,7 +1226,6 @@ const Product = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {/* Use 'mn' for Mongolian product modals */}
                   <Button variant="outlined" onClick={() => openColorModalFn('mn')} sx={{ mt: 1 }}>
                     Manage Colors
                   </Button>
@@ -1217,7 +1258,6 @@ const Product = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {/* Use 'mn' for Mongolian product modals */}
                   <Button variant="outlined" onClick={() => openSize2ModalFn('mn')} sx={{ mt: 1 }}>
                     Manage Sizes
                   </Button>
@@ -1254,8 +1294,8 @@ const Product = () => {
                 <Box display="flex" justifyContent="center">
                   <Avatar
                     src={
-                      editingProduct.ImagesPath && editingProduct.ImagesPath.length > 0
-                        ? editingProduct.ImagesPath[0]
+                      editingProduct.ImagesPath && getImagesArray(editingProduct.ImagesPath).length > 0
+                        ? getImagesArray(editingProduct.ImagesPath)[0]
                         : '/placeholder.jpg'
                     }
                     sx={{ width: 80, height: 80, mb: 2 }}
@@ -1265,22 +1305,66 @@ const Product = () => {
                   Upload Image
                   <input type="file" hidden accept="image/*" multiple onChange={e => handleImageUpload(e, 'en')} />
                 </Button>
-                {editingProduct.ImagesPath && editingProduct.ImagesPath.length > 1 && (
+                {editingProduct.ImagesPath && getImagesArray(editingProduct.ImagesPath).length > 1 && (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
-                    {editingProduct.ImagesPath.map((img, idx) => (
+                    {getImagesArray(editingProduct.ImagesPath).map((img, idx) => (
                       <Box key={idx} sx={{ mr: 1, mb: 1 }}>
                         <img src={img} alt={`Update ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
                       </Box>
                     ))}
                   </Box>
                 )}
-                <TextField fullWidth label="Product Name" value={editingProduct.ProductNameEn || ''} onChange={e => setEditingProduct({ ...editingProduct, ProductNameEn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Brand" value={editingProduct.BrandEn || ''} onChange={e => setEditingProduct({ ...editingProduct, BrandEn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Price" value={editingProduct.PriceEn || ''} onChange={e => setEditingProduct({ ...editingProduct, PriceEn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Stock Quantity" type="number" value={editingProduct.StockQuantity || ''} onChange={e => setEditingProduct({ ...editingProduct, StockQuantity: Number(e.target.value) })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Retail Price" value={editingProduct.RetailPriceEn || ''} onChange={e => setEditingProduct({ ...editingProduct, RetailPriceEn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Warehouse Stock" type="number" value={editingProduct.WarehouseStockEn || ''} onChange={e => setEditingProduct({ ...editingProduct, WarehouseStockEn: Number(e.target.value) })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Material" value={(editingProduct.MaterialEn as string) || ''} onChange={e => setEditingProduct({ ...editingProduct, MaterialEn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  value={editingProduct.ProductNameEn || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, ProductNameEn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Brand"
+                  value={editingProduct.BrandEn || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, BrandEn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Price"
+                  value={editingProduct.PriceEn || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, PriceEn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Stock Quantity"
+                  type="number"
+                  value={editingProduct.StockQuantity || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, StockQuantity: Number(e.target.value) })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Retail Price"
+                  value={editingProduct.RetailPriceEn || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, RetailPriceEn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Warehouse Stock"
+                  type="number"
+                  value={editingProduct.WarehouseStockEn || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, WarehouseStockEn: Number(e.target.value) })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Material"
+                  value={(editingProduct.MaterialEn as string) || ''}
+                  onChange={e => setEditingProduct({ ...editingProduct, MaterialEn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="colors-en-label">Colors</InputLabel>
                   <Select
@@ -1331,8 +1415,8 @@ const Product = () => {
                 <Box display="flex" justifyContent="center">
                   <Avatar
                     src={
-                      editingProductMn.ImagesPathMn && editingProductMn.ImagesPathMn.length > 0
-                        ? editingProductMn.ImagesPathMn[0]
+                      editingProductMn.ImagesPath && getImagesArray(editingProductMn.ImagesPath).length > 0
+                        ? getImagesArray(editingProductMn.ImagesPath)[0]
                         : '/placeholder.jpg'
                     }
                     sx={{ width: 80, height: 80, mb: 2 }}
@@ -1342,22 +1426,66 @@ const Product = () => {
                   Upload Image
                   <input type="file" hidden accept="image/*" multiple onChange={e => handleImageUpload(e, 'mn')} />
                 </Button>
-                {editingProductMn.ImagesPathMn && editingProductMn.ImagesPathMn.length > 0 && (
+                {editingProductMn.ImagesPath && getImagesArray(editingProductMn.ImagesPath).length > 0 && (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
-                    {editingProductMn.ImagesPathMn.map((img, idx) => (
+                    {getImagesArray(editingProductMn.ImagesPath).map((img, idx) => (
                       <Box key={idx} sx={{ mr: 1, mb: 1 }}>
                         <img src={img} alt={`Update ${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4 }} />
                       </Box>
                     ))}
                   </Box>
                 )}
-                <TextField fullWidth label="Product Name" value={editingProductMn.ProductNameMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, ProductNameMn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Brand" value={editingProductMn.BrandMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, BrandMn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Price" value={editingProductMn.PriceMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, PriceMn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Stock Quantity" type="number" value={editingProductMn.StockQuantity || ''} onChange={e => setEditingProductMn({ ...editingProductMn, StockQuantity: Number(e.target.value) })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Retail Price" value={editingProductMn.RetailPriceMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, RetailPriceMn: e.target.value })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Warehouse Stock" type="number" value={editingProductMn.WarehouseStockMn || ''} onChange={e => setEditingProductMn({ ...editingProductMn, WarehouseStockMn: Number(e.target.value) })} sx={{ mb: 2 }} />
-                <TextField fullWidth label="Material" value={(editingProductMn.MaterialMn as string) || ''} onChange={e => setEditingProductMn({ ...editingProductMn, MaterialMn: e.target.value })} sx={{ mb: 2 }} />
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  value={editingProductMn.ProductNameMn || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, ProductNameMn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Brand"
+                  value={editingProductMn.BrandMn || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, BrandMn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Price"
+                  value={editingProductMn.PriceMn || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, PriceMn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Stock Quantity"
+                  type="number"
+                  value={editingProductMn.StockQuantity || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, StockQuantity: Number(e.target.value) })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Retail Price"
+                  value={editingProductMn.RetailPriceMn || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, RetailPriceMn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Warehouse Stock"
+                  type="number"
+                  value={editingProductMn.WarehouseStockMn || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, WarehouseStockMn: Number(e.target.value) })}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Material"
+                  value={(editingProductMn.MaterialMn as string) || ''}
+                  onChange={e => setEditingProductMn({ ...editingProductMn, MaterialMn: e.target.value })}
+                  sx={{ mb: 2 }}
+                />
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="colors-mn-label">Colors</InputLabel>
                   <Select
@@ -1386,7 +1514,6 @@ const Product = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {/* In Mongolian update modal, use "mn" for managing colors */}
                   <Button variant="outlined" onClick={() => openColorModalFn('mn')} sx={{ mt: 1 }}>
                     Manage Colors
                   </Button>
@@ -1438,7 +1565,12 @@ const Product = () => {
         </Dialog>
 
         {/* ===== Snackbar ===== */}
-        <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={3000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
           <MuiAlert severity={snackbarSeverity}>{snackbarMessage}</MuiAlert>
         </Snackbar>
       </Box>
@@ -1462,7 +1594,13 @@ const Product = () => {
           <Box mt={2}>
             <Typography variant="subtitle1">Available Colors:</Typography>
             {(currentLangForColor === 'en' ? colorsEn : colorsMn).map(item => (
-              <Box key={item.colorId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+              <Box
+                key={item.colorId}
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                mt={1}
+              >
                 <Typography variant="body2">Color: {item.color}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditColor(item)}>
@@ -1500,7 +1638,13 @@ const Product = () => {
           <Box mt={2}>
             <Typography variant="subtitle1">Available Sizes:</Typography>
             {(currentLangForSize2 === 'en' ? size2En : size2Mn).map(item => (
-              <Box key={item.sizeId} display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+              <Box
+                key={item.sizeId}
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                mt={1}
+              >
                 <Typography variant="body2">Size: {item.size}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditSize2(item)}>
