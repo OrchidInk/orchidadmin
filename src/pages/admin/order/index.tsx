@@ -27,10 +27,11 @@ import Header from "@/@core/components/Navbar";
 interface FlattenedOrderRecord {
   OrderID: number;
   CustomerOrderId: { Int32: number; Valid: boolean };
+  CompName: string;
+  UserName: string;
   UserId: number;
   PhoneNumber: string;
   CreatedAt: { Time: string; Valid: boolean };
-  // Order item details:
   Quantity: number;
   PriceAtOrder: string;
   SelectedColor: { String: string; Valid: boolean };
@@ -50,7 +51,7 @@ const OrderList = () => {
 
   // New state: selected orders for printing
   const [selectedOrders, setSelectedOrders] = useState<FlattenedOrderRecord[]>([]);
-  // Snackbar state (if needed)
+  // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
@@ -60,24 +61,39 @@ const OrderList = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        // Replace with your endpoint.
+        // Replace with your actual endpoint:
         const response = await axios.get("https://api.orchid.mn/api/v1/superadmin/order/list");
         const data = Array.isArray(response.data) ? response.data : [];
+        // Flatten each order so that each order item becomes a record in the table.
         const flattened: FlattenedOrderRecord[] = data.flatMap((order: any) => {
           if (!Array.isArray(order.OrderItems)) return [];
           return order.OrderItems.map((item: any) => ({
             OrderID: order.OrderID,
             CustomerOrderId: order.CustomerOrderId,
+            CompName: order.CompName,
+            UserName: order.UserName,
             UserId: order.UserId,
             PhoneNumber: order.PhoneNumber,
             CreatedAt: order.CreatedAt,
             Quantity: item.quantity,
             PriceAtOrder: item.priceAtOrder,
-            SelectedColor: { String: item.selectedColor, Valid: item.selectedColor !== "" },
-            SelectedSize: { String: item.selectedSize, Valid: item.selectedSize !== "" },
-            ProductMnID: { Int32: item.productMnId, Valid: item.productMnId !== 0 },
-            ProductEnID: { Int32: item.productEnId, Valid: item.productEnId !== 0 },
-            ProductName: item.productName || order.ProductName || "",
+            SelectedColor: {
+              String: item.selectedColor,
+              Valid: item.selectedColor !== ""
+            },
+            SelectedSize: {
+              String: item.selectedSize,
+              Valid: item.selectedSize !== ""
+            },
+            ProductMnID: {
+              Int32: item.productMnId,
+              Valid: item.productMnId !== 0
+            },
+            ProductEnID: {
+              Int32: item.productEnId,
+              Valid: item.productEnId !== 0
+            },
+            ProductName: item.productName || order.ProductName || ""
           }));
         });
         setOrders(flattened);
@@ -108,9 +124,9 @@ const OrderList = () => {
 
   const handleSelectRow = (order: FlattenedOrderRecord, checked: boolean) => {
     if (checked) {
-      setSelectedOrders(prev => [...prev, order]);
+      setSelectedOrders((prev) => [...prev, order]);
     } else {
-      setSelectedOrders(prev => prev.filter(o => getOrderKey(o) !== getOrderKey(order)));
+      setSelectedOrders((prev) => prev.filter((o) => getOrderKey(o) !== getOrderKey(order)));
     }
   };
 
@@ -122,9 +138,28 @@ const OrderList = () => {
     }
   };
 
-  const allSelected = filteredOrders.length > 0 && filteredOrders.every(order =>
-    selectedOrders.some(o => getOrderKey(o) === getOrderKey(order))
-  );
+  const allSelected =
+    filteredOrders.length > 0 &&
+    filteredOrders.every((order) =>
+      selectedOrders.some((o) => getOrderKey(o) === getOrderKey(order))
+    );
+
+  // Example "Delete" action. Adjust to your needs:
+  const handleDeleteOrder = async (order: FlattenedOrderRecord) => {
+    try {
+      // Replace with your actual delete endpoint:
+      await axios.delete(`https://api.orchid.mn/api/v1/superadmin/order/delete/${order.OrderID}`);
+      setOrders((prev) => prev.filter((o) => o.OrderID !== order.OrderID));
+      setSnackbarMessage(`Order #${order.OrderID} deleted successfully.`);
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (err) {
+      console.error("Failed to delete order:", err);
+      setSnackbarMessage(`Failed to delete order #${order.OrderID}.`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
 
   // Print selected orders.
   const handlePrintOrders = () => {
@@ -139,8 +174,14 @@ const OrderList = () => {
           <head>
             <title>Print Orders</title>
             <style>
-              table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
-              th { background-color: #f2f2f2; }
+              table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+                padding: 8px;
+              }
+              th {
+                background-color: #f2f2f2;
+              }
             </style>
           </head>
           <body>
@@ -150,6 +191,8 @@ const OrderList = () => {
                 <tr>
                   <th>OrderID</th>
                   <th>CustomerOrderId</th>
+                  <th>CompName</th>
+                  <th>UserName</th>
                   <th>UserID</th>
                   <th>PhoneNumber</th>
                   <th>CreatedAt</th>
@@ -163,22 +206,40 @@ const OrderList = () => {
                 </tr>
               </thead>
               <tbody>
-                ${selectedOrders.map(order => `
+                ${selectedOrders
+          .map(
+            (order) => `
                   <tr>
                     <td>${order.OrderID}</td>
-                    <td>${order.CustomerOrderId.Valid ? order.CustomerOrderId.Int32 : "-"}</td>
+                    <td>${order.CustomerOrderId.Valid
+                ? order.CustomerOrderId.Int32
+                : "-"
+              }</td>
+                    <td>${order.CompName || "-"}</td>
+                    <td>${order.UserName || "-"}</td>
                     <td>${order.UserId}</td>
                     <td>${order.PhoneNumber}</td>
-                    <td>${order.CreatedAt.Valid ? order.CreatedAt.Time : "-"}</td>
+                    <td>${order.CreatedAt.Valid
+                ? new Date(order.CreatedAt.Time).toLocaleString("en-US", {
+                  timeZone: "Asia/Ulaanbaatar",
+                })
+                : "-"
+              }</td>
                     <td>${order.Quantity}</td>
                     <td>${order.PriceAtOrder}</td>
-                    <td>${order.SelectedColor.Valid ? order.SelectedColor.String : "-"}</td>
-                    <td>${order.SelectedSize.Valid ? order.SelectedSize.String : "-"}</td>
-                    <td>${order.ProductMnID.Valid ? order.ProductMnID.Int32 : "-"}</td>
-                    <td>${order.ProductEnID.Valid ? order.ProductEnID.Int32 : "-"}</td>
+                    <td>${order.SelectedColor.Valid ? order.SelectedColor.String : "-"
+              }</td>
+                    <td>${order.SelectedSize.Valid ? order.SelectedSize.String : "-"
+              }</td>
+                    <td>${order.ProductMnID.Valid ? order.ProductMnID.Int32 : "-"
+              }</td>
+                    <td>${order.ProductEnID.Valid ? order.ProductEnID.Int32 : "-"
+              }</td>
                     <td>${order.ProductName}</td>
                   </tr>
-                `).join("")}
+                `
+          )
+          .join("")}
               </tbody>
             </table>
           </body>
@@ -196,7 +257,14 @@ const OrderList = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "70vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "70vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -204,8 +272,17 @@ const OrderList = () => {
 
   if (error) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "70vh" }}>
-        <Typography variant="h6" color="error">{error}</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "70vh",
+        }}
+      >
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
       </Box>
     );
   }
@@ -214,7 +291,9 @@ const OrderList = () => {
     <Box>
       <Header />
       <Box sx={{ p: 4 }}>
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>Order List</Typography>
+        <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
+          Order List
+        </Typography>
 
         {/* Filter Section */}
         <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
@@ -256,6 +335,8 @@ const OrderList = () => {
                 </TableCell>
                 <TableCell>OrderID</TableCell>
                 <TableCell>CustomerOrderId</TableCell>
+                <TableCell>CompName</TableCell>
+                <TableCell>UserName</TableCell>
                 <TableCell>UserID</TableCell>
                 <TableCell>PhoneNumber</TableCell>
                 <TableCell>CreatedAt</TableCell>
@@ -266,12 +347,17 @@ const OrderList = () => {
                 <TableCell>ProductMnID</TableCell>
                 <TableCell>ProductEnID</TableCell>
                 <TableCell>ProductName</TableCell>
+                {/* NEW: Action column */}
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredOrders.map((order) => {
                 const key = `${order.OrderID}-${order.Quantity}-${order.PriceAtOrder}`;
-                const isSelected = selectedOrders.some((o) => `${o.OrderID}-${o.Quantity}-${o.PriceAtOrder}` === key);
+                const isSelected = selectedOrders.some(
+                  (o) => `${o.OrderID}-${o.Quantity}-${o.PriceAtOrder}` === key
+                );
+
                 return (
                   <TableRow key={key}>
                     <TableCell padding="checkbox">
@@ -281,17 +367,45 @@ const OrderList = () => {
                       />
                     </TableCell>
                     <TableCell>{order.OrderID}</TableCell>
-                    <TableCell>{order.CustomerOrderId.Valid ? order.CustomerOrderId.Int32 : "-"}</TableCell>
+                    <TableCell>
+                      {order.CustomerOrderId.Valid ? order.CustomerOrderId.Int32 : "-"}
+                    </TableCell>
+                    <TableCell>{order.CompName || "-"}</TableCell>
+                    <TableCell>{order.UserName || "-"}</TableCell>
                     <TableCell>{order.UserId}</TableCell>
                     <TableCell>{order.PhoneNumber}</TableCell>
-                    <TableCell>{order.CreatedAt.Valid ? order.CreatedAt.Time : "-"}</TableCell>
+                    <TableCell>
+                      {order.CreatedAt.Valid
+                        ? new Date(order.CreatedAt.Time).toLocaleString("en-US", {
+                          timeZone: "Asia/Ulaanbaatar",
+                        })
+                        : "-"}
+                    </TableCell>
                     <TableCell>{order.Quantity}</TableCell>
                     <TableCell>{order.PriceAtOrder}</TableCell>
-                    <TableCell>{order.SelectedColor.Valid ? order.SelectedColor.String : "-"}</TableCell>
-                    <TableCell>{order.SelectedSize.Valid ? order.SelectedSize.String : "-"}</TableCell>
-                    <TableCell>{order.ProductMnID.Valid ? order.ProductMnID.Int32 : "-"}</TableCell>
-                    <TableCell>{order.ProductEnID.Valid ? order.ProductEnID.Int32 : "-"}</TableCell>
+                    <TableCell>
+                      {order.SelectedColor.Valid ? order.SelectedColor.String : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {order.SelectedSize.Valid ? order.SelectedSize.String : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {order.ProductMnID.Valid ? order.ProductMnID.Int32 : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {order.ProductEnID.Valid ? order.ProductEnID.Int32 : "-"}
+                    </TableCell>
                     <TableCell>{order.ProductName}</TableCell>
+                    {/* NEW: Action button */}
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleDeleteOrder(order)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -299,13 +413,17 @@ const OrderList = () => {
           </Table>
         </TableContainer>
       </Box>
+
+      {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <MuiAlert severity={snackbarSeverity}>{snackbarMessage}</MuiAlert>
+        <MuiAlert severity={snackbarSeverity} variant="filled" sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </MuiAlert>
       </Snackbar>
     </Box>
   );

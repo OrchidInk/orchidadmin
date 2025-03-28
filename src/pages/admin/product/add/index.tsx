@@ -88,19 +88,19 @@ interface ProductMn {
   SizeNames: string | null
 }
 
-// Update interfaces for colors and sizes using lower‑camelCase keys
+// Update interfaces for colors and sizes using the declared property names
 interface ColorItem {
   id: number
-  colorName: string
-  colorId: number
-  color: string
+  ColorName: string
+  ColorId: number
+  Color: string
 }
 
 interface Size2Item {
   id: number
-  sizeName: string
-  sizeId: number
-  size: string
+  SizeName: string
+  SizeId: number
+  Size: string
 }
 
 // A union type for the shared properties needed in our detail modals.
@@ -161,7 +161,6 @@ const Product = () => {
   const [sCategoryEnId, setSCategoryEnId] = useState<number | null>(null)
   const [priceEn, setPriceEn] = useState('')
   const [stockQuantity, setStockQuantity] = useState<number | null>(null)
-  // const [imagesPath, setImagesPath] = useState<string[]>([])
   const [descriptionEn, setDescriptionEn] = useState('')
   const [brandEn, setBrandEn] = useState('')
   const [manufacturedCountryEn, setManufacturedCountryEn] = useState('')
@@ -307,9 +306,9 @@ const Product = () => {
       const response = await api.get('/color/list')
       const transformed = (response.data || []).map((item: any) => ({
         id: item.ColorId,
-        colorName: item.Color,
-        colorId: item.ColorId,
-        color: item.Color,
+        ColorName: item.Color,
+        ColorId: item.ColorId,
+        Color: item.Color,
       }))
       setColorsEn(transformed)
       setColorsMn(transformed)
@@ -324,9 +323,9 @@ const Product = () => {
       const response = await api.get('/size/list')
       const transformed = (response.data || []).map((item: any) => ({
         id: item.SizeId,
-        sizeName: item.Size,
-        sizeId: item.SizeId,
-        size: item.Size,
+        SizeName: item.Size,
+        SizeId: item.SizeId,
+        Size: item.Size,
       }))
       setSize2En(transformed)
       setSize2Mn(transformed)
@@ -657,12 +656,12 @@ const Product = () => {
   const handleAddOrEditColor = async () => {
     try {
       if (editingColorId !== null) {
-        await api.patch(`/color/update/${editingColorId}`, { colorId: editingColorId, color: tempColor })
+        await api.patch(`/color/update/${editingColorId}`, { ColorId: editingColorId, Color: tempColor })
         if (currentLangForColor === 'en') {
           setColorsEn(prev =>
             prev.map(item =>
               item.id === editingColorId
-                ? { ...item, color: tempColor, colorName: tempColor }
+                ? { ...item, Color: tempColor, ColorName: tempColor }
                 : item
             )
           )
@@ -670,18 +669,18 @@ const Product = () => {
           setColorsMn(prev =>
             prev.map(item =>
               item.id === editingColorId
-                ? { ...item, color: tempColor, colorName: tempColor }
+                ? { ...item, Color: tempColor, ColorName: tempColor }
                 : item
             )
           )
         }
       } else {
         const response = await api.post('/color/create', { colorName: tempColor })
-        const { colorId, color } = response.data
+        const { ColorId, Color } = response.data
         if (currentLangForColor === 'en') {
-          setColorsEn(prev => [...prev, { id: colorId, colorName: color, colorId, color }])
+          setColorsEn(prev => [...prev, { id: ColorId, ColorName: Color, ColorId: ColorId, Color: Color }])
         } else {
-          setColorsMn(prev => [...prev, { id: colorId, colorName: color, colorId, color }])
+          setColorsMn(prev => [...prev, { id: ColorId, ColorName: Color, ColorId: ColorId, Color: Color }])
         }
       }
       setSnackbarMessage('Color saved successfully!')
@@ -699,16 +698,16 @@ const Product = () => {
 
   const handleEditColor = (item: ColorItem) => {
     setEditingColorId(item.id)
-    setTempColor(item.color)
+    setTempColor(item.Color)
   }
 
   const handleDeleteColor = async (id: number) => {
     try {
       await api.delete(`/color/delete/${id}`)
       if (currentLangForColor === 'en') {
-        setColorsEn(prev => prev.filter(item => item.colorId !== id))
+        setColorsEn(prev => prev.filter(item => item.ColorId !== id))
       } else {
-        setColorsMn(prev => prev.filter(item => item.colorId !== id))
+        setColorsMn(prev => prev.filter(item => item.ColorId !== id))
       }
       setSnackbarMessage('Color deleted successfully!')
       setSnackbarSeverity('success')
@@ -732,27 +731,27 @@ const Product = () => {
   const handleAddOrEditSize2 = async () => {
     try {
       if (editingSize2Id !== null) {
-        await api.patch(`/size/update/${editingSize2Id}`, { sizeId: editingSize2Id, size: tempSize2 })
+        await api.patch(`/size/update/${editingSize2Id}`, { SizeId: editingSize2Id, Size: tempSize2 })
         if (currentLangForSize2 === 'en') {
           setSize2En(prev =>
             prev.map(item =>
-              item.id === editingSize2Id ? { ...item, sizeName: tempSize2 } : item
+              item.id === editingSize2Id ? { ...item, Size: tempSize2 } : item
             )
           )
         } else {
           setSize2Mn(prev =>
             prev.map(item =>
-              item.id === editingSize2Id ? { ...item, sizeName: tempSize2 } : item
+              item.id === editingSize2Id ? { ...item, Size: tempSize2 } : item
             )
           )
         }
       } else {
         const response = await api.post('/size/create', { sizeName: tempSize2 })
-        const { sizeId, size } = response.data
+        const { SizeId, Size } = response.data
         if (currentLangForSize2 === 'en') {
-          setSize2En(prev => [...prev, { id: sizeId, sizeName: size, sizeId, size }])
+          setSize2En(prev => [...prev, { id: SizeId, SizeName: Size, SizeId: SizeId, Size: Size }])
         } else {
-          setSize2Mn(prev => [...prev, { id: sizeId, sizeName: size, sizeId, size }])
+          setSize2Mn(prev => [...prev, { id: SizeId, SizeName: Size, SizeId: SizeId, Size: Size }])
         }
       }
       setSnackbarMessage('Size saved successfully!')
@@ -769,8 +768,8 @@ const Product = () => {
   }
 
   const handleEditSize2 = (item: Size2Item) => {
-    setEditingSize2Id(item.sizeId)
-    setTempSize2(item.size)
+    setEditingSize2Id(item.SizeId)
+    setTempSize2(item.Size)
   }
 
   const handleDeleteSize2 = async (id: number) => {
@@ -1028,7 +1027,6 @@ const Product = () => {
         <Dialog open={addModalOpen} onClose={() => setAddModalOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>Add English Product</DialogTitle>
           <DialogContent>
-            {/* ... [Add English Product form remains the same] ... */}
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Typography variant="h6">Product Details</Typography>
@@ -1067,7 +1065,6 @@ const Product = () => {
                 <TextField fullWidth label="Brand" value={brandEn} onChange={e => setBrandEn(e.target.value)} />
                 <TextField fullWidth label="Manufactured Country" value={manufacturedCountryEn} onChange={e => setManufacturedCountryEn(e.target.value)} />
               </Grid>
-              {/* Right Column */}
               <Grid item xs={6}>
                 <Typography variant="h6">Select Colors & Sizes</Typography>
                 <FormControl fullWidth sx={{ mt: 2 }}>
@@ -1086,15 +1083,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsEn.find(c => c.colorId === id)
-                          return found ? found.color : id
+                          const found = colorsEn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsEn.map(color => (
-                      <MenuItem key={color.colorId} value={color.colorId}>
-                        {color.color}
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1118,15 +1115,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = size2En.find(s => s.sizeId === id)
-                          return found ? found.size : id
+                          const found = size2En.find(s => s.SizeId === id)
+                          return found ? found.Size : id
                         })
                         .join(', ')
                     }
                   >
                     {size2En.map(size => (
-                      <MenuItem key={size.sizeId} value={size.sizeId}>
-                        {size.size}
+                      <MenuItem key={size.SizeId} value={size.SizeId}>
+                        {size.Size}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1159,7 +1156,6 @@ const Product = () => {
         <Dialog open={addModalMnOpen} onClose={() => setAddModalMnOpen(false)} fullWidth maxWidth="md">
           <DialogTitle>Add Mongolian Product</DialogTitle>
           <DialogContent>
-            {/* ... [Add Mongolian Product form remains the same] ... */}
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Typography variant="h6">Product Details</Typography>
@@ -1214,15 +1210,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsMn.find(c => c.colorId === id)
-                          return found ? found.color : id
+                          const found = colorsMn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsMn.map(color => (
-                      <MenuItem key={color.colorId} value={color.colorId}>
-                        {color.color}
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1246,15 +1242,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = size2Mn.find(s => s.sizeId === id)
-                          return found ? found.size : id
+                          const found = size2Mn.find(s => s.SizeId === id)
+                          return found ? found.Size : id
                         })
                         .join(', ')
                     }
                   >
                     {size2Mn.map(size => (
-                      <MenuItem key={size.sizeId} value={size.sizeId}>
-                        {size.size}
+                      <MenuItem key={size.SizeId} value={size.SizeId}>
+                        {size.Size}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1268,7 +1264,7 @@ const Product = () => {
                 <TextField fullWidth label="Staple Size" value={stapleSizeMn} onChange={e => setStapleSizeMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Capacity" value={capacityMn} onChange={e => setCapacityMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Weight" value={weightMn} onChange={e => setWeightMn(e.target.value)} sx={{ mt: 2 }} />
-                <TextField fullWidth label="Thickness" value={thicknessMn} onChange={e => setThinknessEn(e.target.value)} sx={{ mt: 2 }} />
+                <TextField fullWidth label="Thickness" value={thicknessMn} onChange={e => setThinknessMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Packaging" value={packagingMn} onChange={e => setPackagingMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Product Code" value={productCodeMn} onChange={e => setProductCodeMn(e.target.value)} sx={{ mt: 2 }} />
                 <TextField fullWidth label="Cost Price" value={costPriceMn} onChange={e => setCostPriceMn(e.target.value)} sx={{ mt: 2 }} />
@@ -1381,15 +1377,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsEn.find(c => c.colorId === id)
-                          return found ? found.color : id
+                          const found = colorsEn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsEn.map(color => (
-                      <MenuItem key={color.colorId} value={color.colorId}>
-                        {color.color}
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1502,15 +1498,15 @@ const Product = () => {
                     renderValue={selected =>
                       (selected as number[])
                         .map(id => {
-                          const found = colorsMn.find(c => c.colorId === id)
-                          return found ? found.color : id
+                          const found = colorsMn.find(c => c.ColorId === id)
+                          return found ? found.Color : id
                         })
                         .join(', ')
                     }
                   >
                     {colorsMn.map(color => (
-                      <MenuItem key={color.colorId} value={color.colorId}>
-                        {color.color}
+                      <MenuItem key={color.ColorId} value={color.ColorId}>
+                        {color.Color}
                       </MenuItem>
                     ))}
                   </Select>
@@ -1595,18 +1591,18 @@ const Product = () => {
             <Typography variant="subtitle1">Available Colors:</Typography>
             {(currentLangForColor === 'en' ? colorsEn : colorsMn).map(item => (
               <Box
-                key={item.colorId}
+                key={item.ColorId}
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
                 mt={1}
               >
-                <Typography variant="body2">Color: {item.color}</Typography>
+                <Typography variant="body2">Color: {item.Color}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditColor(item)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteColor(item.colorId)}>
+                  <IconButton size="small" onClick={() => handleDeleteColor(item.ColorId)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -1639,18 +1635,18 @@ const Product = () => {
             <Typography variant="subtitle1">Available Sizes:</Typography>
             {(currentLangForSize2 === 'en' ? size2En : size2Mn).map(item => (
               <Box
-                key={item.sizeId}
+                key={item.SizeId}
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
                 mt={1}
               >
-                <Typography variant="body2">Size: {item.size}</Typography>
+                <Typography variant="body2">Size: {item.Size}</Typography>
                 <Box>
                   <IconButton size="small" onClick={() => handleEditSize2(item)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteSize2(item.sizeId)}>
+                  <IconButton size="small" onClick={() => handleDeleteSize2(item.SizeId)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
